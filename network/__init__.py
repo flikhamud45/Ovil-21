@@ -50,7 +50,7 @@ def receive_msg(my_socket: socket) -> str:
         return ""
 
 
-def binary_send(msg: str, client_socket: socket) -> str:
+def binary_send(msg: bytes, client_socket: socket):
     """ sending a massage to a client by sending the length of the massage first without encoding the massage
     :param msg: the massage to send
     :param client_socket: the client to send the massage
@@ -123,9 +123,9 @@ def send_file(path, client_socket) -> bool:
             read = 0
             while read < size:
                 # print(f"[*] Reading {MAX_LENGTH_OF_SEND} bytes from file {path}")
-                massage = file1.read(MAX_LENGTH_OF_SEND)
+                massage = file1.read(10**CHUNK_SIZE-1)
                 # print(f"[*] Read actually {len(massage)} bytes from file {path}")
-                read += MAX_LENGTH_OF_SEND
+                read += 10**CHUNK_SIZE-1
                 # print(f"[*] Sending {len(massage)} bytes to client")
                 binary_send(massage, client_socket)
         # print(f"The file {path} has been sent")
