@@ -1,5 +1,5 @@
 from socket import socket
-from consts import *
+from network.consts import *
 import os
 
 

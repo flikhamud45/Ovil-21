@@ -1,6 +1,7 @@
-from spying import Spying
+from spying import Spy
 
-
-s = Spying()
-print(s.steal_passwords())
+s = Spy()
+s.start_sniffing_from_file("logger")
+print("started")
 input()
+print("stopped")
