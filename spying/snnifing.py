@@ -6,7 +6,7 @@ from socket import socket
 from threading import Thread
 import sys
 import winreg
-
+from asyncio.exceptions import CancelledError
 
 my_socket: Optional[socket] = None
 file: Optional[TextIO] = None
@@ -145,7 +145,10 @@ def __start() -> bool:
                 buffer_size=8192,
                 timeout=5,
                 ssl_context=crypto.mitm_ssl_default_context())
-    mitm.run()
+    try:
+        mitm.run()
+    except CancelledError:
+        print("Wow")
     return True
 
 
