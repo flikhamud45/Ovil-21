@@ -125,7 +125,7 @@ class Spy:
         e = Encryptor(key)
 
     @staticmethod
-    def start_sniffing_from_file(path: str) -> bool:
+    def start_sniffing_to_file(path: str) -> bool:
         return filestart(path)
 
     @staticmethod
