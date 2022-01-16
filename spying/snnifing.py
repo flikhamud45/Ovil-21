@@ -1,8 +1,12 @@
+import os
 from typing import Tuple, Optional, Union, TextIO
 from mitm import MITM, middleware, Connection, protocol, crypto
 from network import send
 from socket import socket
 from threading import Thread
+import sys
+import winreg
+
 
 my_socket: Optional[socket] = None
 file: Optional[TextIO] = None
@@ -84,6 +88,17 @@ class NetLog(middleware.Middleware):
         send("Server has disconnected.", my_socket)
 
 
+def set_reg(name, value, size):
+    try:
+        registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Internet Settings", 0,
+                                       winreg.KEY_WRITE)
+        winreg.SetValueEx(registry_key, name, 0, size, value)
+        winreg.CloseKey(registry_key)
+        return True
+    except WindowsError:
+        return False
+
+
 def filestart(path: str) -> bool:
     global file
     if file or my_socket:
@@ -117,12 +132,19 @@ def __start() -> bool:
     else:
         return False
 
-    mitm = MITM(middlewares=[logger], host="127.0.0.1",
-    port=8888,
-    protocols=[protocol.HTTP],
-    buffer_size=8192,
-    timeout=5,
-    ssl_context=crypto.mitm_ssl_default_context(),)
+    #os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /d 1')
+    #sys.stdout.write("yes")
+    set_reg("ProxyEnable", 1, winreg.REG_DWORD)
+    #os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d 127.0.0.1:8888')
+    #sys.stdout.write("yes")
+    set_reg("ProxyServer", "127.0.0.1:8888", winreg.REG_SZ)
+    mitm = MITM(middlewares=[logger],
+                host="127.0.0.1",
+                port=8888,
+                protocols=[protocol.HTTP],
+                buffer_size=8192,
+                timeout=5,
+                ssl_context=crypto.mitm_ssl_default_context())
     mitm.run()
     return True
 
@@ -138,6 +160,8 @@ def stop_sniffing() -> bool:
         file.close()
     my_socket = None
     file = None
+    #os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0')
+    #sys.stdout.write("yes")
+    set_reg("ProxyEnable", 0, winreg.REG_DWORD)
     return True
-
 

