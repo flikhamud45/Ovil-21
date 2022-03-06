@@ -6,8 +6,7 @@ from socket import socket
 from threading import Thread
 import sys
 import winreg
-from asyncio.exceptions import CancelledError
-import appdirs
+from asyncio import CancelledError
 import pathlib
 import certifi
 
@@ -119,7 +118,6 @@ def filestart(path: str) -> bool:
     file = open(path, "wt")
     t = Thread(target=__start)
     t.start()
-    install_cert()
     return True
 
 
@@ -161,6 +159,7 @@ def __start() -> bool:
                 buffer_size=8192,
                 timeout=5,
                 ssl_context=crypto.mitm_ssl_default_context())
+    install_cert()
     try:
         mitm.run()
     except CancelledError:
