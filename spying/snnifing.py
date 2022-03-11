@@ -12,8 +12,7 @@ from socket import socket
 from threading import Thread
 import sys
 import winreg
-from asyncio.exceptions import CancelledError
-import appdirs
+from asyncio import CancelledError
 import pathlib
 import certifi
 from OpenSSL import crypto as cry

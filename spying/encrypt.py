@@ -6,7 +6,7 @@ from typing import Tuple, Callable
 
 class Encryptor:
     def __init__(self, key=None):
-        self.encryption_key = key if key else Fernet.generate_key()
+        self.encryption_key = key.encode() if key else Fernet.generate_key()
         self.fernet = Fernet(self.encryption_key)
 
     def encrypt_file(self, path) -> bool:
@@ -51,5 +51,3 @@ class Encryptor:
 
     def decrypt(self, path: str) -> Tuple[list, list]:
         return self._doall(path, self.decrypt_file)
-
-

