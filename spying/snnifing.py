@@ -5,7 +5,8 @@ import random
 import ssl
 from typing import Tuple, Optional, Union, TextIO
 from mitm import MITM, middleware, Connection, protocol, crypto, __data__
-from mitm.crypto import new_RSA, new_X509
+from mitm.crypto import new_RSA
+from mitm.crypto import crypto as cr
 
 from network import send
 from socket import socket
@@ -22,6 +23,50 @@ file: Optional[TextIO] = None
 mitm: Optional[MITM] = None
 installed_hosts = []
 
+
+def new_X509(
+    country_name: str = "US",
+    state_or_province_name: str = "New York",
+    locality: str = "New York",
+    organization_name: str = "mitm",
+    organization_unit_name: str = "mitm",
+    common_name: str = "what",
+    serial_number: int = random.getrandbits(1024),
+    time_not_before: int = 0,  # 0 means now.
+    time_not_after: int = 5 * (365 * 24 * 60 * 60),  # 5 year.
+) -> cr.X509:
+    """
+    Generates a non-signed X509 certificate.
+
+    This function is intended to be utilized with :py:func:`new_RSA`. See function
+    :py:func:`new_pair` to understand how to generate a valid RSA and X509 pair for
+    SSL/TLS use.
+
+    Args:
+        country_name: Country name code. Defaults to ``US``.
+        state_or_province_name: State or province name. Defaults to ``New York``.
+        locality: Locality name. Can be any. Defaults to ``New York``.
+        organization_name: Name of the org generating the cert. Defaults to ``mitm``.
+        organization_unit_name: Name of the subunit of the org. Defaults to ``mitm``.
+        common_name: Server name protected by the SSL cert. Defaults to hostname.
+        serial_number: A unique serial number. Any number between 0 and 2^159-1. Defaults to random number.
+        time_not_before: Time since cert is valid. 0 means now. Defaults to ``0``.
+        time_not_after: Time when cert is no longer valid. Defaults to 5 years.
+    """
+
+    cert = cr.X509()
+    #cert.set_version(3)
+    cert.get_subject().C = country_name
+    cert.get_subject().ST = state_or_province_name
+    cert.get_subject().L = locality
+    cert.get_subject().O = organization_name
+    cert.get_subject().OU = organization_unit_name
+    cert.get_subject().CN = common_name
+    cert.set_serial_number(serial_number)
+    cert.gmtime_adj_notBefore(time_not_before)
+    cert.gmtime_adj_notAfter(time_not_after)
+    cert.set_issuer(cert.get_subject())
+    return cert
 
 async def new_pair(
     host: str,
@@ -71,7 +116,7 @@ async def start_connection(connection: Connection, data):
     print("what")
     if b"CONNECT" in data:
         print("whatttt")
-        host = data[data.find(b" ")+1: data.find(b":")]
+        host = str(data[data.find(b" ")+1: data.find(b":")])[2:-1]
         print("OK")
     else:
         return
@@ -86,7 +131,7 @@ async def start_connection(connection: Connection, data):
         print("4")
         context.load_cert_chain(certfile=rsa_cert, keyfile=rsa_key)
         connection.ssl_context = context
-        print(host)
+        print(rsa_cert)
         install_cert(rsa_cert)
         os.remove(rsa_key)
         os.remove(rsa_cert)
@@ -146,7 +191,6 @@ class NetLog(middleware.Middleware):
 
     @staticmethod
     async def client_connected(connection: Connection):
-        start_connection(connection)
         host, port = connection.client.writer._transport.get_extra_info("peername")
         send("Client %s:%i has connected." % (host, port), my_socket)
 
@@ -157,6 +201,7 @@ class NetLog(middleware.Middleware):
 
     @staticmethod
     async def client_data(connection: Connection, data: bytes) -> bytes:
+        await start_connection(connection, data)
         send("Client to server: \n\n\t%s\n" % data, my_socket)
         return data
 
