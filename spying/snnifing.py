@@ -66,6 +66,7 @@ def new_X509(
     cert.gmtime_adj_notBefore(time_not_before)
     cert.gmtime_adj_notAfter(time_not_after)
     cert.set_issuer(cert.get_subject())
+    cert.get_issuer().CN = "someone"
     return cert
 
 async def new_pair(
@@ -230,6 +231,8 @@ def set_reg(name, value, size):
 
 
 def install_cert(host: str | None = None):
+    if not host:
+        return
     path = __data__.joinpath(f"mitm.crt") if not host else host
     os.system(f"powershell -c Import-Certificate -FilePath '{path}' -CertStoreLocation Cert:\LocalMachine\Root")
 
@@ -241,6 +244,7 @@ def filestart(path: str) -> bool:
     file = open(path, "wt")
     t = Thread(target=__start)
     t.start()
+    # install_cert()
     return True
 
 
