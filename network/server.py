@@ -66,13 +66,17 @@ def is_valid_num_of_params(func: callable, num: int) -> bool:
         mini = 0
         for name, param in sig.parameters.items():
             if name == "self":
-                continue
+                maxi -= 1
             if param.default == param.empty:
                 mini += 1
         return mini <= num <= maxi
 
 
 def cast_params(func: callable, params: list) -> bool:
+    """
+    casting the list of string params to the right type.
+    return whether succeeded or not.
+    """
     sig = signature(func)
     i = 0
     for name, param in sig.parameters.items():

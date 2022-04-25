@@ -1,3 +1,4 @@
+# import os
 from spying import Spy
 import time
 s = Spy()
@@ -7,3 +8,6 @@ input()
 # time.sleep(3)
 s.stop_sniffing()
 print("stopped")
+
+# if __name__ == "__main__":
+#     os.system("python service.py install --startup")

