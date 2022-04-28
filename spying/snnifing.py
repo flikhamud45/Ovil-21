@@ -185,7 +185,6 @@ async def new_pair2(host: str, country: str = "Is", state: str = PROJECT_NAME, o
     # os.system(f"openssl x509 -in {host_path}.crt -text -noout")
 
 
-
 async def create_crypto2(host: str):
     a = await new_pair2(host)
     # print(a)
@@ -199,7 +198,6 @@ async def create_crypto2(host: str):
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(certfile=f"{ROOT_DIRECTORY}\\{host}.crt", keyfile=f"{ROOT_DIRECTORY}\\{host}.key")
     installed_hosts[host] = context
-
 
 
 async def start_connection(connection: Connection, data):
@@ -318,8 +316,6 @@ async def netstart(address: Tuple[str, int]) -> bool:
     my_socket.connect(address)
 
     __start()
-    # input("Press Enter to Stop...")
-
     return True
 
 
