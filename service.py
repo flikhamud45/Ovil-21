@@ -47,7 +47,7 @@ def remove_service(service_name: str, nssm_path: str = "nssm.exe") -> None:
     os.system(f"{nssm_path} remove {service_name} confirm")
 
 
-def install_service(service_name: str, service_path: str, nssm_path: str = "nssm.exe", start: bool = True, override: bool = False, directory_path: str | None = None) -> None:
+def install_service(service_name: str, service_path: str, nssm_path: str = "nssm.exe", start: bool = True, override: bool = False, directory_path = None) -> None:
     if not is_installed(service_name, nssm_path):
         os.system(f"{nssm_path}, install {service_name} {service_path}")
         if directory_path:
@@ -91,3 +91,7 @@ def install_service(service_name: str, service_path: str, nssm_path: str = "nssm
 #         #     f.write(f"{n}\n")
 #         f.close()
 #
+
+if __name__ == "__main__":
+    install_service("service1", f"{ROOT_DIRECTORY}\\service1.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=True)
+    install_service("service2", f"{ROOT_DIRECTORY}\\service2.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=True)

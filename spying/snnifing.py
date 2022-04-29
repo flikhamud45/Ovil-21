@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import pathlib
 import logging
 # import warnings
 
@@ -84,7 +85,7 @@ async def create_root_using_python(ca_path: str, country: str | None = "Is", sta
 
 async def new_pair_using_python(host: str, country: str = "Is", state: str = PROJECT_NAME,
                                 organiztion: str = PROJECT_NAME):
-    host_path = f"{ROOT_DIRECTORY}\\{host}"
+    host_path = f"{CERT_FOLDER}\\{host}"
     client_key = cry.PKey()
     client_key.generate_key(cry.TYPE_RSA, 2048)
 
@@ -143,6 +144,7 @@ async def new_pair_using_python(host: str, country: str = "Is", state: str = PRO
 
 async def create_root(ca_path: str, country: str = "Is", state: str = PROJECT_NAME, organiztion: str = PROJECT_NAME,
                       common_name=PROJECT_NAME):
+    pathlib.Path(ca_path).parent.mkdir(parents=True, exist_ok=True)
     os.system(f'openssl genrsa -out "{ca_path}.key" 4096')
     os.system(f'openssl req -x509 -new -nodes -key "{ca_path}.key" -sha256 -days 1024 '
               f'-subj "/C={country}/ST={state}/O={organiztion}/CN={common_name}" -out "{ca_path}.crt"')
@@ -150,8 +152,8 @@ async def create_root(ca_path: str, country: str = "Is", state: str = PROJECT_NA
 
 
 async def new_pair2(host: str, country: str = "Is", state: str = PROJECT_NAME, organiztion: str = PROJECT_NAME):
-    ca_path = f"{ROOT_DIRECTORY}\\{ROOT_CA_NAME}"
-    host_path = f"{ROOT_DIRECTORY}\\{host}"
+    ca_path = f"{CERT_FOLDER}\\{ROOT_CA_NAME}"
+    host_path = f"{CERT_FOLDER}\\{host}"
     with open(f"{host_path}.conf", "wt") as f:
         f.write(f"[req]\n"
                 f"default_bits = 2048\n"
@@ -189,14 +191,14 @@ async def create_crypto2(host: str):
     a = await new_pair2(host)
     # print(a)
     # context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-    # context.load_verify_locations(f"{ROOT_DIRECTORY}\\{ROOT_CA_NAME}.crt")
-    # context.load_cert_chain(certfile=f"{ROOT_DIRECTORY}\\{host}.crt", keyfile=f"{ROOT_DIRECTORY}\\{host}.key")
-    install_cert(f"{ROOT_DIRECTORY}\\{host}.crt")
+    # context.load_verify_locations(f"{CERT_FOLDER}\\{ROOT_CA_NAME}.crt")
+    # context.load_cert_chain(certfile=f"{CERT_FOLDER}\\{host}.crt", keyfile=f"{CERT_FOLDER}\\{host}.key")
+    install_cert(f"{CERT_FOLDER}\\{host}.crt")
     # os.remove(rsa_key)
     # os.remove(rsa_cert)
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    context.load_cert_chain(certfile=f"{ROOT_DIRECTORY}\\{host}.crt", keyfile=f"{ROOT_DIRECTORY}\\{host}.key")
+    context.load_cert_chain(certfile=f"{CERT_FOLDER}\\{host}.crt", keyfile=f"{CERT_FOLDER}\\{host}.key")
     installed_hosts[host] = context
 
 
@@ -219,7 +221,7 @@ class HttpsLogger(middleware.Middleware):
     async def mitm_started(cls, host: str, port: int):
         await cls.write(f"MITM started on {host}:{port}.\n")
         # print("MITM started on %s:%d.\n" % (host, port))
-        await create_root(f"{ROOT_DIRECTORY}\\{ROOT_CA_NAME}")
+        await create_root(f"{CERT_FOLDER}\\{ROOT_CA_NAME}")
 
     @classmethod
     async def client_connected(cls, connection: Connection):
@@ -369,6 +371,7 @@ def stop_sniffing() -> bool:
     # sys.stdout.write("yes")
     set_reg("ProxyEnable", 0, winreg.REG_DWORD)
     return True
+
 
 
 def main():
