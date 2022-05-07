@@ -17,6 +17,11 @@ live = True
 num = 2
 
 
+def install_ovil():
+    # TODO: finnish this
+    pass
+
+
 def run(command: str) -> Tuple[str, str]:
     result = subprocess.run(command.split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     return result.stdout.decode()[::2].strip(), result.stderr.decode()[::2].strip()
@@ -26,6 +31,7 @@ def infinite_service(service_name: str) -> None:
     install_service(service_name, f"{ROOT_DIRECTORY}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=False)
     while True:
         # time.sleep(1)
+        install_ovil()
         install_service(service_name, f"{ROOT_DIRECTORY}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}")
 
 
