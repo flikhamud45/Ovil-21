@@ -373,7 +373,6 @@ def stop_sniffing() -> bool:
     return True
 
 
-
 def main():
     filestart("logger.txt")
     # print("started")

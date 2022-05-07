@@ -1,5 +1,5 @@
 import os
-
+from typing import Tuple
 # import win32serviceutil
 # import win32service
 # import win32event
@@ -17,46 +17,51 @@ live = True
 num = 2
 
 
+def run(command: str) -> Tuple[str, str]:
+    result = subprocess.run(command.split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    return result.stdout.decode()[::2].strip(), result.stderr.decode()[::2].strip()
+
+
 def infinite_service(service_name: str) -> None:
-    install_service(service_name, f"{ROOT_DIRECTORY}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=True)
+    install_service(service_name, f"{ROOT_DIRECTORY}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=False)
     while True:
-        time.sleep(1)
+        # time.sleep(1)
         install_service(service_name, f"{ROOT_DIRECTORY}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}")
 
 
-def check_status(service_name: str, nssm_path: str = "nssm.exe") -> str:
-    result = subprocess.run([nssm_path, 'status', service_name], capture_output=True, text=True, stdout=subprocess.PIPE)
-    return result.stdout
+def check_status(service_name: str, nssm_path: str = "nssm.exe") -> Tuple[str, str]:
+    return run(f"{nssm_path} status {service_name}")
 
 
 def is_started(service_name: str, nssm_path: str = "nssm.exe") -> bool:
-    return check_status(service_name, nssm_path) == "SERVICE_RUNNING"
+    return check_status(service_name, nssm_path)[0] == "SERVICE_RUNNING"
 
 
 def is_installed(service_name: str, nssm_path: str = "nssm.exe") -> bool:
-    status = check_status(service_name, nssm_path)
-    return status.startswith("Can't open service!") or \
-        (status != "SERVICE_RUNNING" and status != "SERVICE_STOPPED" and status != "SERVICE_PAUSED")
+    status, err = check_status(service_name, nssm_path)
+    return not err.startswith("Can't open service!") and \
+           (status == "SERVICE_RUNNING" or status == "SERVICE_STOPPED" or status == "SERVICE_PAUSED")
 
 
-def start_service(service_name: str, nssm_path: str = "nssm.exe") -> None:
-    os.system(f"{nssm_path} start {service_name}")
+def start_service(service_name: str, nssm_path: str = "nssm.exe") -> Tuple[str, str]:
+    return run(f"{nssm_path} start {service_name}")
 
 
-def remove_service(service_name: str, nssm_path: str = "nssm.exe") -> None:
-    os.system(f"{nssm_path} remove {service_name} confirm")
-
+def remove_service(service_name: str, nssm_path: str = "nssm.exe") -> tuple[tuple[str, str], Tuple[str, str]]:
+    r1 = run(f"{nssm_path} stop {service_name}")
+    r2 = run(f"{nssm_path} remove {service_name} confirm")
+    return r1, r2
 
 def install_service(service_name: str, service_path: str, nssm_path: str = "nssm.exe", start: bool = True, override: bool = False, directory_path = None) -> None:
     if not is_installed(service_name, nssm_path):
-        os.system(f"{nssm_path}, install {service_name} {service_path}")
+        print(run(f"{nssm_path} install {service_name} {service_path}"))
         if directory_path:
-            os.system(f"{nssm_path} set {service_name} AppDirectory {directory_path}")
+            print(run(f"{nssm_path} set {service_name} AppDirectory {directory_path}"))
     elif override:
-        remove_service(service_name, nssm_path)
-        install_service(service_name, service_path, nssm_path, start, False, directory_path)
-    if start and is_started(check_status(service_name, nssm_path)):
-        start_service(service_name, nssm_path)
+        print(remove_service(service_name, nssm_path))
+        install_service(service_name, service_path, nssm_path, False, False, directory_path)
+    if start and not is_started(service_name, nssm_path):
+        print(start_service(service_name, nssm_path))
 
 
 # class Service(win32serviceutil.ServiceFramework):
