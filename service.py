@@ -1,5 +1,6 @@
 import os
-from typing import Tuple
+from functools import reduce
+from typing import Tuple, List
 # import win32serviceutil
 # import win32service
 # import win32event
@@ -28,7 +29,8 @@ def run(command: str) -> Tuple[str, str]:
 
 
 def infinite_service(service_name: str) -> None:
-    install_service(service_name, f"{ROOT_DIRECTORY}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=False)
+    install_service(service_name, f"{ROOT_DIRECTORY}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
+                    override=False)
     while True:
         # time.sleep(1)
         install_ovil()
@@ -58,7 +60,9 @@ def remove_service(service_name: str, nssm_path: str = "nssm.exe") -> tuple[tupl
     r2 = run(f"{nssm_path} remove {service_name} confirm")
     return r1, r2
 
-def install_service(service_name: str, service_path: str, nssm_path: str = "nssm.exe", start: bool = True, override: bool = False, directory_path = None) -> None:
+
+def install_service(service_name: str, service_path: str, nssm_path: str = "nssm.exe", start: bool = True,
+                    override: bool = False, directory_path=None) -> None:
     if not is_installed(service_name, nssm_path):
         print(run(f"{nssm_path} install {service_name} {service_path}"))
         if directory_path:
@@ -102,7 +106,18 @@ def install_service(service_name: str, service_path: str, nssm_path: str = "nssm
 #         #     f.write(f"{n}\n")
 #         f.close()
 #
+def remove_services(services: List[str], nssm_path: str) -> None:
+    services_live = True
+    while services_live:
+        for service in services:
+            print(remove_service(service, nssm_path))
+        services_live = False
+        for service in services:
+            if is_installed(service, nssm_path):
+                services_live = True
+
 
 if __name__ == "__main__":
+    remove_services(["service1", "service2"], f"{ROOT_DIRECTORY}\\{'nssm.exe'}")
     install_service("service1", f"{ROOT_DIRECTORY}\\service1.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=True)
     install_service("service2", f"{ROOT_DIRECTORY}\\service2.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=True)
