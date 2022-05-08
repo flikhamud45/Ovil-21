@@ -153,4 +153,8 @@ class Spy:
     def get_browser_info() -> Tuple[list, list]:
         return get_history().histories, get_bookmarks().bookmarks
 
+    @staticmethod
+    def enter_to_setup(path):
+        # TODO: add this
+        pass
 
