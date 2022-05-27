@@ -25,9 +25,12 @@ class Client:
         return other == self.ip
 
     def disconnect(self):
+        self.connected = False
         pass
 
     def send_command(self, command: str, params: List[str]):
+        if not self.connected:
+            return "This ovil is not connected"
         if command == "start_sniffing_on_net":
             send(command, self.socket)
             self.start_sniffing_on_net()
@@ -36,7 +39,7 @@ class Client:
 
         msg = [command]
         msg.extend(params)
-        send(str(Massages.SEP).join(msg), self.socket)
+        send(str(Massages.SEP.value).join(msg), self.socket)
         response = receive_msg(self.socket)
         return response
 

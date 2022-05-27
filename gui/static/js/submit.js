@@ -148,6 +148,41 @@ $("#StaticMitmSubmit").click(function() {
 
 });
 
+$("#KeyLoggerSubmit").click(function() {
+  funcURL = "stop" ;
+
+  $("#KeyLoggerSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+    q = $('#KeyLoggerData').val()
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#KeyLoggerSubmit').addClass("finish");
+//    $('#KeyLoggerResult').html(msg);
+
+    setTimeout(function() {
+      $("#KeyLoggerSubmit").removeClass("pro").removeClass("finish").html("Stop");
+      $("#RefreshSubmit").html("Start");
+      $('#KeyLoggerData').html("<center>" + msg + "</center>");
+      //$('#KeyLoggerResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+  });
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#KeyLoggerSubmit').addClass("finish");
+    $('#KeyLoggerData').html("");
+    $('#KeyLoggerResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#KeyLoggerSubmit").removeClass("pro").removeClass("finish").html("Stop");
+  });
+
+});
+
+
 $("#PostImageSubmit").click(function() {
   funcURL = "upload" ;
   

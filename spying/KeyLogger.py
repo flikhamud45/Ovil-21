@@ -1,3 +1,4 @@
+from typing import Callable
 
 from keyboard import hook, KeyboardEvent, unhook
 from queue import Queue
@@ -18,11 +19,18 @@ class KeyLogger:
         else:
             self.odd = True
 
-    def start(self, callback=None):
+    def start(self, callback: Callable[[KeyboardEvent], None] | None = None) -> bool:
         callback = callback if callback else self.add
+        if self.callback:
+            return False
         self.callback = hook(callback)
+        return True
 
-    def stop(self):
+    def stop(self) -> bool:
         if not self.callback:
-            raise RuntimeError("the keylogger is already stopped")
+            # raise RuntimeError("the keylogger is already stopped")
+            return False
         unhook(self.callback)
+        self.callback = None
+        self.keys = Queue()
+        return True

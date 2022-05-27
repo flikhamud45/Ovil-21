@@ -27,12 +27,29 @@
 	.st-container > a {
 		position: fixed;
 		bottom: 0px;
-		width: 20%;
+		width: 100%;
 		cursor: pointer;
 		font-size: 16px;
 		height: 34px;
 		line-height: 34px;
 	}
+
+    .st-panel h3 {
+		color: #A8DBA8; /*e23a6e*/
+		text-shadow: 1px 1px 1px rgba(151,24,64,0.2);
+		position: absolute;
+		font-size: 65px;
+		font-weight: 900;
+		width: 80%;
+		left: 10%;
+		text-align: center;
+		line-height: 50px;
+		margin: -70px 0 0 0;
+		padding: 0;
+		top: 50%;
+		-webkit-backface-visibility: hidden;
+	}
+
 
 	.st-container > input {
 		opacity: 0;
@@ -66,7 +83,7 @@
 	}
 
 	#st-control-2, #st-control-2 + a {
-		left: 20%;
+		left: 50%;
 	}
 
 	#st-control-3, #st-control-3 + a {
@@ -243,22 +260,6 @@
 		top: 50%;
 		-webkit-backface-visibility: hidden;
 	}
-	.st-panel h4 {
-		color: #A8DBA8; /*e23a6e*/
-		text-shadow: 1px 1px 1px rgba(151,24,64,0.2);
-		position: absolute;
-		font-size: 65px;
-		font-weight: 900;
-		width: 80%;
-		left: 10%;
-		text-align: center;
-		line-height: 50px;
-		margin: -70px 0 0 0;
-		padding: 0;
-		top: 50%;
-		-webkit-backface-visibility: hidden;
-	}
-
 
 	#st-control-1:checked ~ .st-scroll #st-panel-1 h2,
 	#st-control-2:checked ~ .st-scroll #st-panel-2 h2,
@@ -851,6 +852,7 @@
 	.results {
 <!--		margin: 30px;-->
 		margin-left: 50ew;
+		margin-top: 10vh;
 		position: absolute;
 		width: 100%;
 		bottom: 35%;
@@ -860,6 +862,16 @@
 <!--		border: 3px solid green;-->
 		font-weight: 900;
 	}
+
+	.results2 {
+		margin: 30px;
+		margin-top: 30vh;
+		color: #0B486B;
+		color: #FE4365;
+
+		font-weight: 900;
+	}
+
 	.button-submit {
 		background: #fff;
 		-webkit-box-shadow: 0 0 0 2px #4cd964;
@@ -951,9 +963,12 @@
 		font-weight: 900;
 		font-size: 2vw;
 		color: #4cd964;
-		position: absolute;
-		left: 50%;
-		bottom: 20%;
+		position: relative;
+		margin-left: 50vw;
+		margin-bottom: 3.5vh;
+		margin-top: 3.5vh;
+		left: 0%;
+		bottom: 0%;
 		-webkit-transform: translate(-50%, -50%);
 		-moz-transform: translate(-50%, -50%);
 		-o-transform: translate(-50%, -50%);
@@ -1018,259 +1033,6 @@
 		-ms-animation: fade 0.8s ease forwards;
 		animation: fade 0.8s ease forwards;
 	}
-
-	.button-submit3 {
-		background: #fff;
-		-webkit-box-shadow: 0 0 0 2px #4cd964;
-		box-shadow: 0 0 0 2px #4cd964;
-		border: 0;
-		height: 40px;
-		line-height: 36px;
-		width: 42vw;
-		font-weight: 900;
-		font-size: 2vw;
-		color: #4cd964;
-		position: absolute;
-		margin-top: 30vh;
-		margin-bottom: 30vh;
-		left: 50%;
-		bottom: 40%;
-		-webkit-transform: translate(-50%, -50%);
-		-moz-transform: translate(-50%, -50%);
-		-o-transform: translate(-50%, -50%);
-		-ms-transform: translate(-50%, -50%);
-		transform: translate(-50%, -50%);
-		-webkit-border-radius: 20px;
-		border-radius: 20px;
-		-webkit-transition: all 0.2s ease;
-		-moz-transition: all 0.2s ease;
-		-o-transition: all 0.2s ease;
-		-ms-transition: all 0.2s ease;
-		transition: all 0.2s ease;
-		cursor: pointer;
-		outline: none;
-	}
-	.button-submit3:hover {
-		background: #4cd964;
-		color: #fff;
-	}
-	.button-submit3.pro {
-		background-color: #b5b5b5;
-		background-image: url("/static/imgs/loading.gif");
-		background-repeat: no-repeat;
-		background-position: center center;
-		-webkit-box-shadow: 0 0 0 2px #b5b5b5;
-		box-shadow: 0 0 0 2px #b5b5b5;
-		color: #fff;
-		-webkit-transition: background-color 0.2s ease;
-		-moz-transition: background-color 0.2s ease;
-		-o-transition: background-color 0.2s ease;
-		-ms-transition: background-color 0.2s ease;
-		transition: background-color 0.2s ease;
-	}
-	.button-submit3.finish {
-		background: #4cd964;
-		-webkit-box-shadow: 0 0 0 2px #4cd964;
-		box-shadow: 0 0 0 2px #4cd964;
-		-webkit-transition: background-color, border-color 0.2s ease;
-		-moz-transition: background-color, border-color 0.2s ease;
-		-o-transition: background-color, border-color 0.2s ease;
-		-ms-transition: background-color, border-color 0.2s ease;
-		transition: background-color, border-color 0.2s ease;
-	}
-	.button-submit3.finish:after {
-		content: "";
-		display: block;
-		position: absolute;
-		width: 14px;
-		height: 6px;
-		border-bottom: 4px #fff solid;
-		border-left: 4px #fff solid;
-		z-index: 9999;
-		-webkit-transform: rotate(-45deg);
-		-moz-transform: rotate(-45deg);
-		-o-transform: rotate(-45deg);
-		-ms-transform: rotate(-45deg);
-		transform: rotate(-45deg);
-		margin: -7px 0px 0px 44px;
-		-webkit-animation: fade 0.8s ease forwards;
-		-moz-animation: fade 0.8s ease forwards;
-		-o-animation: fade 0.8s ease forwards;
-		-ms-animation: fade 0.8s ease forwards;
-		animation: fade 0.8s ease forwards;
-	}
-
-	.button-submit4 {
-		background: #fff;
-		-webkit-box-shadow: 0 0 0 2px #4cd964;
-		box-shadow: 0 0 0 2px #4cd964;
-		border: 0;
-		height: 40px;
-		line-height: 36px;
-		width: 42vw;
-		font-weight: 900;
-		font-size: 2vw;
-		color: #4cd964;
-		position: absolute;
-		margin-top: 20vh;
-		margin-bottom: 20vh;
-		left: 50%;
-		bottom: 30%;
-		-webkit-transform: translate(-50%, -50%);
-		-moz-transform: translate(-50%, -50%);
-		-o-transform: translate(-50%, -50%);
-		-ms-transform: translate(-50%, -50%);
-		transform: translate(-50%, -50%);
-		-webkit-border-radius: 20px;
-		border-radius: 20px;
-		-webkit-transition: all 0.2s ease;
-		-moz-transition: all 0.2s ease;
-		-o-transition: all 0.2s ease;
-		-ms-transition: all 0.2s ease;
-		transition: all 0.2s ease;
-		cursor: pointer;
-		outline: none;
-	}
-	.button-submit4:hover {
-		background: #4cd964;
-		color: #fff;
-	}
-	.button-submit4.pro {
-		background-color: #b5b5b5;
-		background-image: url("/static/imgs/loading.gif");
-		background-repeat: no-repeat;
-		background-position: center center;
-		-webkit-box-shadow: 0 0 0 2px #b5b5b5;
-		box-shadow: 0 0 0 2px #b5b5b5;
-		color: #fff;
-		-webkit-transition: background-color 0.2s ease;
-		-moz-transition: background-color 0.2s ease;
-		-o-transition: background-color 0.2s ease;
-		-ms-transition: background-color 0.2s ease;
-		transition: background-color 0.2s ease;
-	}
-	.button-submit4.finish {
-		background: #4cd964;
-		-webkit-box-shadow: 0 0 0 2px #4cd964;
-		box-shadow: 0 0 0 2px #4cd964;
-		-webkit-transition: background-color, border-color 0.2s ease;
-		-moz-transition: background-color, border-color 0.2s ease;
-		-o-transition: background-color, border-color 0.2s ease;
-		-ms-transition: background-color, border-color 0.2s ease;
-		transition: background-color, border-color 0.2s ease;
-	}
-	.button-submit4.finish:after {
-		content: "";
-		display: block;
-		position: absolute;
-		width: 14px;
-		height: 6px;
-		border-bottom: 4px #fff solid;
-		border-left: 4px #fff solid;
-		z-index: 9999;
-		-webkit-transform: rotate(-45deg);
-		-moz-transform: rotate(-45deg);
-		-o-transform: rotate(-45deg);
-		-ms-transform: rotate(-45deg);
-		transform: rotate(-45deg);
-		margin: -7px 0px 0px 44px;
-		-webkit-animation: fade 0.8s ease forwards;
-		-moz-animation: fade 0.8s ease forwards;
-		-o-animation: fade 0.8s ease forwards;
-		-ms-animation: fade 0.8s
-		 	<script>
-							function NewTab(tab) {
-								var s = "ovil/";
-								window.open(
-									  s.concat(tab), "_blank");
-							}
-    					</script>ease forwards;
-		animation: fade KeyLoggers;
-	}
-
-	.button-submit5 {
-		background: #fff;
-		-webkit-box-shadow: 0 0 0 2px #4cd964;
-		box-shadow: 0 0 0 2px #4cd964;
-		border: 0;
-		height: 40px;
-		line-height: 36px;
-		width: 22vw;
-		font-weight: 900;
-		font-size: 2vw;
-		color: #4cd964;
-		position: relative;
-		top: 33%;
-		bottom: 30%;
-		left: 22%;
-		right: 22%;
-		 margin-right: 7vw;
-		 margin-bottom: 7vh;
-		-webkit-transform: translate(-50%, -50%);
-		-moz-transform: translate(-50%, -50%);
-		-o-transform: translate(-50%, -50%);
-		-ms-transform: translate(-50%, -50%);
-		transform: translate(-50%, -50%);
-		-webkit-border-radius: 20px;
-		border-radius: 20px;
-		-webkit-transition: all 0.2s ease;
-		-moz-transition: all 0.2s ease;
-		-o-transition: all 0.2s ease;
-		-ms-transition: all 0.2s ease;
-		transition: all 0.2s ease;
-		cursor: pointer;
-		outline: none;
-	}
-	.button-submit5:hover {
-		background: #4cd964;
-		color: #fff;
-	}
-	.button-submit5.pro {
-		background-color: #b5b5b5;
-		background-image: url("/static/imgs/loading.gif");
-		background-repeat: no-repeat;
-		background-position: center center;
-		-webkit-box-shadow: 0 0 0 2px #b5b5b5;
-		box-shadow: 0 0 0 2px #b5b5b5;
-		color: #fff;
-		-webkit-transition: background-color 0.2s ease;
-		-moz-transition: background-color 0.2s ease;
-		-o-transition: background-color 0.2s ease;
-		-ms-transition: background-color 0.2s ease;
-		transition: background-color 0.2s ease;
-	}
-	.button-submit5.finish {
-		background: #4cd964;
-		-webkit-box-shadow: 0 0 0 2px #4cd964;
-		box-shadow: 0 0 0 2px #4cd964;
-		-webkit-transition: background-color, border-color 0.2s ease;
-		-moz-transition: background-color, border-color 0.2s ease;
-		-o-transition: background-color, border-color 0.2s ease;
-		-ms-transition: background-color, border-color 0.2s ease;
-		transition: background-color, border-color 0.2s ease;
-	}
-	.button-submit5.finish:after {
-		content: "";
-		display: block;
-		position: absolute;
-		width: 14px;
-		height: 6px;
-		border-bottom: 4px #fff solid;
-		border-left: 4px #fff solid;
-		z-index: 9999;
-		-webkit-transform: rotate(-45deg);
-		-moz-transform: rotate(-45deg);
-		-o-transform: rotate(-45deg);
-		-ms-transform: rotate(-45deg);
-		transform: rotate(-45deg);
-		margin: -7px 0px 0px 44px;
-		-webkit-animation: fade 0.8s ease forwards;
-		-moz-animation: fade 0.8s ease forwards;
-		-o-animation: fade 0.8s ease forwards;
-		-ms-animation: fade 0.8s ease forwards;
-		animation: fade 0.8s ease forwards;
-	}
-
 
 
 	#reset {
@@ -1348,118 +1110,34 @@
 		<div class="st-container">
 
 			<input type="radio" name="radio-set" checked="checked" id="st-control-1"/>
-			<a href="#st-panel-1">Main Page</a>
-
-			<input type="radio" name="radio-set" id="st-control-2"/>
-			<a href="#st-panel-2">Connect to Ovil</a>
-
-			<input type="radio" name="radio-set" id="st-control-3"/>
-			<a href="#st-panel-3">MITM</a>
-
-			<input type="radio" name="radio-set" id="st-control-4"/>
-			<a href="#st-panel-4">Spying</a>
-
-			<input type="radio" name="radio-set" id="st-control-5"/>
-			<a href="#st-panel-5">remote control</a>
+			<a href="#st-panel-1">KeyLogger</a>
 
 			<div class="st-scroll">
 
 				<section class="st-panel" id="st-panel-1">
 					<div class="st-deco" data-icon="✦"></div>
-					<h2>Ovil - {{ ip }}</h2>
-					{% if connected==1 %}
-						<h3>connected!</h3>
-						<div id="DisconnectResult" class="results"></div>
-						<button id="DisconnectSubmit" class="button-submit2">Disconnect</button>
+                    <script>
+                        function NewTab(tab) {
+                            var s = "ovil/";
+                            window.open(
+                                  s.concat(tab), "_blank");
+                        }
+    				</script>
+					<h2>KeyLogger</h2>
+                    {% if connected %}
+						<div id="KeyLoggerData" class="results2">{{ data }}</div>
+                        <button id="RefreshSubmit" class="button-submit2" onclick='location.reload()'>Reload</button>
+                        <div id="KeyLoggerResult" class="results"></div>
+						<button id="KeyLoggerSubmit" class="button-submit2">Stop</button>
 					{% else %}
-						<h3>not connected!</h3>
-						<div id="ConnectOldResult" class="results"></div>
-						<button id="ConnectOldSubmit" class="button-submit2">Connect</button>
+						<h3>Not Started!</h3>
+						<div id="StartKeyLoggerResult" class="results"></div>
+						<button id="StartKeyLoggerSubmit" class="button-submit2" onclick='location.reload'>Start</button>
 					{% endif %}
 
-				</section>
-
-				<section class="st-panel st-color" id="st-panel-2">
-					<div class="st-deco" data-icon="✦"></div>
-					<h2>Connect to new Ovil</h2>
-					<div class="st-centered">
-						<div class="st-box">
-							<div class="row">
-								<div id="ConnectNewResult" class="results"></div>
-								<span>
-									<input class="swing" id="ConnectNew" type="text" placeholder="Ip address" /><label for="ConnectNew">Connect</label>
-								</span>
-								<button id="ConnectNewSubmit" class="button-submit4">Submit</button>
-<!--								<div id="ConnectNewOvil" class="results">Enter the ip of the new Ovil:</div>-->
-<!--								<span>-->
-<!--									<input class="swing" id="ConnectNew" type="text" placeholder="ip address" /><label for="ConnectNew">Connect</label>-->
-<!--								</span>-->
-<!--								<button id="ConnectNewSubmit" class="button-submit">Submit</button>-->
-							</div>
-						</div>
-					</div>
-				</section>
-
-				<section class="st-panel" id="st-panel-3">
-					<div class="st-deco" data-icon="✦"></div>
-					<h2>Man In The Middle</h2>
-					<div class="st-centered">
-						<script>
-						function NewTab(tab) {
-							window.open(
-								  tab, "_blank");
-						}
-						</script>
-						{% if mitm %}
-							<button id="MITMStaticSubmit1" class="button-submit3" onclick='NewTab("staticmitm")'>Stop MITM and save to file</button>
-							<button id="MITMDynamicSubmit1" class="button-submit4" onclick='NewTab("dynamicmitm")'>Stop MITM dynamically</button>
-						{% else %}
-						<button id="MITMStaticSubmit" class="button-submit3" onclick='NewTab("staticmitm")'>Start MITM and save to file</button>
-						<button id="MITMDynamicSubmit" class="button-submit4" onclick='NewTab("dynamicmitm")'>Start MITM dynamically</button>
-						{% endif %}
-						<img src="/static/imgs/mitm.png" alt="mitm" style="margin-top:30vh;width:38%;height:38%;">
-					</div>
-<!--					<center><img src="/static/imgs/mitm.png" alt="mitm" style="padding-top:25%;width:38%;height:38%;"></center>-->
 
 
-				</section>
 
-				<section class="st-panel st-color" id="st-panel-4">
-					<div class="st-deco" data-icon="✦"></div>
-						<h2>Spying</h2>
-						<script>
-							function NewTab(tab) {
-								window.open(
-									  tab, "_blank");
-							}
-    					</script>
-						<button id="KeyLogger" class="button-submit5" onclick='NewTab("KeyLogger")'>KeyLogger</button>
-						<button id="steal_passwords" class="button-submit5" onclick='NewTab("steal_passwords")'>Steal Passwords</button>
-						<button id="video_audio_record" class="button-submit5" onclick='NewTab("video_audio_record")'>Video and Audio</button>
-						<button id="encryption" class="button-submit5" onclick='NewTab("encryption")'>Encryption</button>
-						<button id="services" class="button-submit5" onclick='NewTab("services")'>Services</button>
-						<button id="steal_file" class="button-submit5" onclick='NewTab("steal_file")'>Steal Files</button>
-						<button id="other_info" class="button-submit5" onclick='NewTab("other_info")'>Other Info</button>
-
-
-				</section>
-
-				<section class="st-panel" id="st-panel-5">
-					<div class="st-deco" data-icon="✦"></div>
-					<h2>4.11 Get Posted Image</h2>
-					<div class="st-centered">
-						<div class="st-box">
-							<div class="row">
-								<div id="GetImageResult" class="results">Click Submit To See Result:</div>
-								<span>
-									<input class="balloon" id="GetImage" type="text" placeholder="String Image Name" /><label for="GetImage">Image</label>
-								</span>
-								<button id="GetImageSubmit" class="button-submit">Submit</button>
-
-							</div>
-							<div class="info">Support The Get Image Function Then Press The Button</div>
-						</div>
-					</div>
 				</section>
 
 			</div><!-- // st-scroll -->
@@ -1467,10 +1145,10 @@
 		</div><!-- // st-container -->
 
 	</div>
-	<script type="text/javascript" src="../../static/js/jquery.min.js"></script>
-	<script type="text/javascript" src="../../static/js/box.js"></script>
+	<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/static/js/box.js"></script>
 
-	<script type="text/javascript" src="../../static/js/submit.js"></script>
+	<script type="text/javascript" src="/static/js/submit.js"></script>
 
 </body>
 </html>

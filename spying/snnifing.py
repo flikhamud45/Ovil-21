@@ -35,7 +35,7 @@ from network import send
 my_socket: Optional[socket] = None
 file: Optional[TextIO] = None
 mitm: Optional[MITM] = None
-
+MITM_PORT = 12889
 installed_hosts = {}
 ca_cert: cry.X509 | None = None
 ca_key: cry.PKey | None = None
@@ -347,13 +347,13 @@ def __start(address) -> bool:
         return False
     # os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d 127.0.0.1:8888')
     # sys.stdout.write("yes")
-    if not set_reg("ProxyServer", "127.0.0.1:8881", winreg.REG_SZ):
+    if not set_reg("ProxyServer", f"127.0.0.1:{MITM_PORT}", winreg.REG_SZ):
         return False
     if not set_reg("ProxyOverride", f"<local>;{address[0]}", winreg.REG_SZ):
         return False
     mitm = MITM(middlewares=[logger],
                 host="127.0.0.1",
-                port=8881,
+                port=MITM_PORT,
                 protocols=[protocol.HTTP],
                 buffer_size=8192,
                 timeout=5,

