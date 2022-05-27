@@ -1,7 +1,7 @@
 
 from enum import Enum
 
-PORT = 8821
+PORT = 8800
 IP = "127.0.0.1"
 ADDRESS = (IP, PORT)
 MAX_SIZE_OF_MSG = 3  # the max length is 10 ^ this number
@@ -49,3 +49,6 @@ class Massages(Enum):
     INVALID_NUMBER_OF_PARAMS = "-2"
     INVALID_PARAMS = "-3"
     DEFAULT_PARAM = "-1a5x2dr"
+
+
+MITM_DEFAULT_PORT = 8564

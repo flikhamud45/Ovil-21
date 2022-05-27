@@ -32,8 +32,9 @@ def send(msg, client_socket: socket) -> None:
     """
     msg = msg.encode()
     if len(msg) >= 10 ** MAX_SIZE_OF_MSG: raise ValueError("The msg is too long")
-    client_socket.send(str(len(msg)).zfill(MAX_SIZE_OF_MSG).encode())
-    client_socket.send(msg)
+    client_socket.sendall(str(len(msg)).zfill(MAX_SIZE_OF_MSG).encode())
+    client_socket.sendall(msg)
+    print(f"sent {msg}")
 
 
 def receive_msg(my_socket: socket) -> str:
@@ -45,7 +46,9 @@ def receive_msg(my_socket: socket) -> str:
         data = my_socket.recv(MAX_SIZE_OF_MSG)
         length = int(data.decode())
         data = my_socket.recv(length)
-        return data.decode(encoding="utf8")
+        data = data.decode(encoding="utf8")
+        print(f"recieved {data}")
+        return data
     except UnicodeDecodeError:
         return ""
 
@@ -55,8 +58,8 @@ def binary_send(msg: bytes, client_socket: socket):
     :param msg: the massage to send
     :param client_socket: the client to send the massage
     """
-    client_socket.send(str(len(msg)).encode().zfill(CHUNK_SIZE))
-    client_socket.send(msg)
+    client_socket.sendall(str(len(msg)).encode().zfill(CHUNK_SIZE))
+    client_socket.sendall(msg)
 
 
 def binary_receive(my_socket: socket) -> (int, bytes):

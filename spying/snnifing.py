@@ -1,5 +1,6 @@
 from __future__ import annotations
-
+import multiprocessing
+import threading
 import asyncio
 import os
 import pathlib
@@ -10,6 +11,7 @@ import logging
 # os.environ['PYTHONASYNCIODEBUG'] = '1'
 # logging.basicConfig(level=logging.DEBUG)
 # warnings.resetwarnings()
+import time
 
 from consts import *
 import random
@@ -295,33 +297,39 @@ def install_cert(host: str | None = None):
     os.system(f"powershell -c Import-Certificate -FilePath '{path}' -CertStoreLocation Cert:\LocalMachine\Root")
 
 
-def filestart(path: str) -> bool:
+
+
+
+def __filestart(path: str, address: Tuple[str, int]) -> bool:
     global file
-    if file or my_socket:
-        return False
-    file = open(path, "wt")
+    try:
+        if file or my_socket:
+            return False
+        file = open(path, "wt")
 
-    __start()
-    # input("Press Enter to Stop...")
-
-    # t = Thread(target=__start)
-    # t.start()
-    # install_cert()
-    return True
+        return __start(address)
+    finally:
+        file.close()
+        set_reg("ProxyEnable", 0, winreg.REG_DWORD)
 
 
-async def netstart(address: Tuple[str, int]) -> bool:
+
+
+
+def __netstart(address) -> bool:
     global my_socket
-    if file or my_socket:
-        return False
-    my_socket = socket()
-    my_socket.connect(address)
+    try:
+        if file or my_socket:
+            return False
+        my_socket = socket()
+        my_socket.connect(address)
+        return __start(address)
+    finally:
+        my_socket.close()
+        set_reg("ProxyEnable", 0, winreg.REG_DWORD)
 
-    __start()
-    return True
 
-
-def __start() -> bool:
+def __start(address) -> bool:
     global mitm
     if my_socket and file:
         return False
@@ -339,11 +347,13 @@ def __start() -> bool:
         return False
     # os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d 127.0.0.1:8888')
     # sys.stdout.write("yes")
-    if not set_reg("ProxyServer", "127.0.0.1:8880", winreg.REG_SZ):
+    if not set_reg("ProxyServer", "127.0.0.1:8881", winreg.REG_SZ):
+        return False
+    if not set_reg("ProxyOverride", f"<local>;{address[0]}", winreg.REG_SZ):
         return False
     mitm = MITM(middlewares=[logger],
                 host="127.0.0.1",
-                port=8880,
+                port=8881,
                 protocols=[protocol.HTTP],
                 buffer_size=8192,
                 timeout=5,
@@ -356,31 +366,3 @@ def __start() -> bool:
     return True
 
 
-def stop_sniffing() -> bool:
-    global my_socket, file
-    if not mitm:
-        return False
-    mitm.stop()
-    if my_socket:
-        my_socket.close()
-    if file:
-        file.close()
-    my_socket = None
-    file = None
-    # os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0')
-    # sys.stdout.write("yes")
-    set_reg("ProxyEnable", 0, winreg.REG_DWORD)
-    return True
-
-
-def main():
-    filestart("logger.txt")
-    # print("started")
-    # input()
-    # # time.sleep(3)
-    # stop_sniffing()
-    # # print("stopped")
-
-
-if __name__ == "__main__":
-    main()

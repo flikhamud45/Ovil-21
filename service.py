@@ -16,14 +16,15 @@ import pathlib
 # import random
 import time
 from consts import *
+import psutil
 
 # live = True
 # num = 2
 
 
-def install_ovil():
-    # TODO: finnish this
-    pass
+def install_ovil(name: str = PROJECT_NAME , ovil_path: str = OVIL_PATH):
+    if name in (p.name() for p in psutil.process_iter()):
+        os.startfile(ovil_path)
 
 
 def secure_files(protected_files: List[Tuple[str, str]] = SERVICE_PATHS, protected_dirs: List[Tuple[str, str]] = PROTECTED_DIRS) -> None:
@@ -37,11 +38,21 @@ def secure_files(protected_files: List[Tuple[str, str]] = SERVICE_PATHS, protect
         if not p2.exists():
             shutil.copyfile(p1, p2)
 
-    for d in protected_dirs:
-        og_dir = pathlib.Path(d[0])
-        alt_dir = pathlib.Path(d[0])
-        for file in og_dir:
-            # TODO: finnish going through dirs
+    # for d in protected_dirs:
+    #     og_dir = pathlib.Path(d[0])
+    #     alt_dir = pathlib.Path(d[1])
+    #     secure_dir(og_dir, alt_dir, og_dir)
+    #     secure_dir(alt_dir, og_dir, alt_dir)
+
+
+def secure_dir(d: pathlib.Path, alt: pathlib.Path, og: pathlib.Path):
+    for file in d.iterdir():
+        if file.is_dir():
+            secure_dir(file, alt, og)
+        else:
+            (alt / file.relative_to(og)).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(file, alt / file.relative_to(og))
+
 
 
 def run(command: str) -> Tuple[str, str]:
@@ -131,7 +142,7 @@ def install_service(service_name: str, service_path: str, nssm_path: str = "nssm
 #         #     f.write(f"{n}\n")
 #         f.close()
 #
-def remove_services(services: List[str], nssm_path: str) -> None:
+def remove_services(services: List[str], nssm_path: str) -> None:                                                                                                                                                                                                                   
     services_live = True
     while services_live:
         for service in services:
@@ -145,7 +156,7 @@ def remove_services(services: List[str], nssm_path: str) -> None:
 if __name__ == "__main__":
     while True:
         secure_files()
-    # remove_services([f"{SERVICE_NAME}1", f"{SERVICE_NAME}2"], f"{ROOT_DIRECTORY}\\{'nssm.exe'}")
+    # remove_services([f"{SERVICE_NAME}1", f"{SERVICE_NAME}2"], )
     # install_service(f"{SERVICE_NAME}1", SERVICE_PATHS[0][0], f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
     #                 override=True)
     # install_service(f"{SERVICE_NAME}2", SERVICE_PATHS[1][0], f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
