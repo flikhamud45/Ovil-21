@@ -297,9 +297,6 @@ def install_cert(host: str | None = None):
     os.system(f"powershell -c Import-Certificate -FilePath '{path}' -CertStoreLocation Cert:\LocalMachine\Root")
 
 
-
-
-
 def __filestart(path: str, address: Tuple[str, int]) -> bool:
     global file
     try:
@@ -311,9 +308,6 @@ def __filestart(path: str, address: Tuple[str, int]) -> bool:
     finally:
         file.close()
         set_reg("ProxyEnable", 0, winreg.REG_DWORD)
-
-
-
 
 
 def __netstart(address) -> bool:
