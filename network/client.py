@@ -14,9 +14,9 @@ class Client:
         self.ip = ip
         self.connected = False
 
-    def connect_to_server(self, ip: str = IP, port: int = PORT):
-        self.ip = ip
-        self.socket.connect((ip, port))
+    def connect_to_server(self):
+        self.socket.settimeout(TIMEOUT_SOCKET)
+        self.socket.connect((self.ip, PORT))
         self.connected = True
 
     def __eq__(self, other) -> bool:

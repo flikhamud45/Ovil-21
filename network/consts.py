@@ -6,7 +6,7 @@ IP = "127.0.0.1"
 ADDRESS = (IP, PORT)
 MAX_SIZE_OF_MSG = 10  # the max length is 10 ^ this number
 CHUNK_SIZE = 4  # the real size is 10 ^ this number
-
+TIMEOUT_SOCKET = 5
 
 SPY_COMMANDS = {
     '1': "get_commands",
