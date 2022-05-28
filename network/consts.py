@@ -52,3 +52,5 @@ class Massages(Enum):
 
 
 MITM_DEFAULT_PORT = 8565
+FILE_TRANSFER_PORT = 8956
+UPLOAD_DEFAULT_PATH = "static\\uploads"

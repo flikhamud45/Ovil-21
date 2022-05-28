@@ -1,28 +1,19 @@
 from __future__ import annotations
-import multiprocessing
-import threading
-import asyncio
 import os
-import pathlib
-import logging
 # import warnings
 
 
 # os.environ['PYTHONASYNCIODEBUG'] = '1'
 # logging.basicConfig(level=logging.DEBUG)
 # warnings.resetwarnings()
-import time
 
-from consts import *
+from spying.consts import *
 import random
 import ssl
-from typing import Tuple, Optional, Union, TextIO
-from mitm import MITM, middleware, Connection, protocol, crypto, __data__
-from mitm.crypto import new_RSA
-from mitm.crypto import crypto as cr
+from typing import Tuple, Optional, TextIO
+from mitm import MITM, middleware, Connection, protocol, __data__
 # from network import send
 from socket import socket
-from threading import Thread
 # import sys
 import winreg
 from asyncio import CancelledError

@@ -1,3 +1,5 @@
+from moviepy.editor import VideoFileClip
+from pydub import AudioSegment
 from typing import Union
 import cv2
 import pyaudio
@@ -6,6 +8,8 @@ import threading
 import time
 import subprocess
 import os
+
+from spying.consts import DEFAULT_VIDEO_NAME, DEFAULT_AUDIO_NAME, FFMPEG_PATH
 
 
 class Recorder:
@@ -38,7 +42,7 @@ class Recorder:
 
 class AudioRecorder(Recorder):
     """Audio class based on pyAudio and Wave"""
-    def __init__(self, filename="temp_audio.wav", rate=44100, fpb=1024, channels=None):
+    def __init__(self, filename=DEFAULT_AUDIO_NAME, rate=44100, fpb=1024, channels=None):
         super(AudioRecorder, self).__init__(filename)
         if not self.filename.endswith(".wav"): self.filename += ".wav"
         self.rate = rate
@@ -85,7 +89,7 @@ class AudioRecorder(Recorder):
 
 
 class VideoRecorder(Recorder):
-    def __init__(self, filename="temp_video.avi", fourcc="MJPG", sizex=None, sizey=None, camindex=None, fps=30):
+    def __init__(self, filename=DEFAULT_VIDEO_NAME, fourcc="MJPG", sizex=None, sizey=None, camindex=None, fps=30):
         super(VideoRecorder, self).__init__(filename)
         if not self.filename.endswith(".avi"): self.filename += ".avi"
         self.device_index = camindex if camindex else get_available_cameras()[0]
@@ -148,8 +152,8 @@ class VideoRecorder(Recorder):
                     filename += ".avi"
                 else:
                     filename = filename[0:-4]
-                # cmd = f"ffmpeg -r {recorded_fps} -i {filename}.avi -pix_fmt yuv420p -r 6 {filename}2.avi"
-                # cmd = f"ffmpeg -i {filename}.avi -filter:v fps={recorded_fps} {filename}2.avi"
+                # cmd = f"{FFMPEG_PATH} -r {recorded_fps} -i {filename}.avi -pix_fmt yuv420p -r 6 {filename}2.avi"
+                # cmd = f"{FFMPEG_PATH} -i {filename}.avi -filter:v fps={recorded_fps} {filename}2.avi"
                 # subprocess.call(cmd, shell=False)
                 # os.remove(f"{filename}.avi")
                 # os.rename(f"{filename}2.avi", f"{filename}.avi")
@@ -158,15 +162,25 @@ class VideoRecorder(Recorder):
             # RuntimeError("cannot close a closed recorder")
             return False
 
-    def stop_merge(self, audio: AudioRecorder, filename):
+    def stop_merge(self, audio: AudioRecorder, filename: str):
         audio.stop()
         self.stop()
-        # cmd = f"ffmpeg -y -ac 2 -channel_layout {'mono' if audio.channels == 1 else 'stereo'} -i {self.filename} -i {self.filename[0:-4]}.avi -pix_fmt yuv420p {filename}.avi"
-        cmd = f"ffmpeg -y -i {audio.filename}  -r 30 -i {self.filename}  -filter:a aresample=async=1 -c:a flac -c:v copy {filename}.mkv"
+        new_audio = AudioSegment.from_wav(audio.filename)
+        audio_dur = new_audio.duration_seconds*1000
+        clip = VideoFileClip(self.filename)
+        video_dur = clip.duration * 1000
+        clip.close()
+        if audio_dur > video_dur:
+            new_audio = new_audio[audio_dur-video_dur:audio_dur]
+            new_audio.export(audio.filename, format="wav")
+        if not filename.endswith("mkv"):
+            filename += "mkv"
+        # cmd = f"{FFMPEG_PATH} -y -ac 2 -channel_layout {'mono' if audio.channels == 1 else 'stereo'} -i {self.filename} -i {self.filename[0:-4]}.avi -pix_fmt yuv420p {filename}.avi"
+        cmd = f"{FFMPEG_PATH} -y -i {audio.filename}  -r 30 -i {self.filename}  -filter:a aresample=async=1 -c:a flac -c:v copy {filename}"
         subprocess.call(cmd, shell=False)
-        # input_video = ffmpeg.input(self.filename)
-        # input_audio = ffmpeg.input(audio.filename)
-        # ffmpeg.concat(input_video, input_audio, v=1, a=1).output(filename).run()
+        # input_video = {FFMPEG_PATH}.input(self.filename)
+        # input_audio = {FFMPEG_PATH}.input(audio.filename)
+        # {FFMPEG_PATH}.concat(input_video, input_audio, v=1, a=1).output(filename).run()
         # print("Normal recording\nMuxing")
         # print("..")
         os.remove(f"{self.filename}")

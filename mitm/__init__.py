@@ -1,4 +1,4 @@
-__author__ = "Felipe Faria"
+__author__ = "Ofek"
 
 import appdirs
 import pathlib

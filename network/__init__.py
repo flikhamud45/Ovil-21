@@ -1,6 +1,7 @@
 from socket import socket
 from network.consts import *
 import os
+from pathlib import Path
 
 
 def check_ip(ip: str) -> bool:
@@ -80,22 +81,18 @@ def receive_file(my_socket: socket) -> (bool, str):
     """
 
     data = receive_msg(my_socket)
-    if data.startswith("Error:"):
+    if data.startswith("Error:") or data in [m.value for m in Massages]:
         print(data)
-        return False, ""
+        return False, data
 
-    file_name, file_size = data.split()[0], int(data.split()[1])
+    file_name, file_size = " ".join(data.split()[0:-1]), int(data.split()[-1])
     # print(f"[*] Preparing to receive {file_size} bytes from server")
-
-    parent_directory = "\\".join(file_name.split("\\")[0:-1])
-    if not os.path.exists(parent_directory):
-        os.makedirs(parent_directory)
-    with open(os.path.abspath(file_name), "wb") as file:
+    path = Path(UPLOAD_DEFAULT_PATH) / Path(file_name).name
+    with open(path, "wb") as file:
         given = 0
         error = False
         while not error and given < file_size:
             length, chunk_data = binary_receive(my_socket)
-            assert length == len(chunk_data)
             try:
                 if chunk_data.decode().startswith("Error:"):
                     error = True
@@ -107,7 +104,7 @@ def receive_file(my_socket: socket) -> (bool, str):
                 file.write(chunk_data)
                 given += length
 
-    return not error, file_name
+    return not error, str(path)
 
 
 def send_file(path, client_socket) -> bool:
@@ -118,10 +115,10 @@ def send_file(path, client_socket) -> bool:
     """
     try:
 
-        size  = os.path.getsize(path)
+        size = os.path.getsize(path)
         # print(f"[*] Sending the file size {size}")
         # send the length of the file to the client
-        send(str(size), client_socket)
+        send(f"{path} {size}", client_socket)
         with open(path, "rb") as file1:
             read = 0
             while read < size:

@@ -1,7 +1,5 @@
-import pathlib
 import os
 import shutil
-from functools import reduce
 from typing import Tuple, List
 # import win32serviceutil
 # import win32service
@@ -14,8 +12,7 @@ import pathlib
 # import sys
 # from SMWinservice import SMWinservice
 # import random
-import time
-from consts import *
+from spying.consts import *
 import psutil
 
 # live = True

