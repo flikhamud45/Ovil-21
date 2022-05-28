@@ -12,13 +12,13 @@ from network import check_ip
 from network.client import Client
 
 app = Flask(__name__)
-turbo = Turbo(app)
-ovils: List[Client] = [Client("127.0.0.1"), Client("127.0.0.2"), Client("127.0.0.3"), Client("127.0.0.4"),
-                       Client("127.0.0.5"), Client("127.0.0.6"), Client("127.0.0.7")]
+# turbo = Turbo(app)
+# ovils: List[Client] = [Client("127.0.0.1"), Client("127.0.0.2"), Client("127.0.0.3"), Client("127.0.0.4"),
+#                        Client("127.0.0.5"), Client("127.0.0.6"), Client("127.0.0.7")]
 dynamic_mitm_ovil: Client | None = None
 
 
-# ovils: List[Client] = []
+ovils: List[Client] = []
 
 
 def handle_errors(func: Callable[..., str]) -> Callable[..., str]:

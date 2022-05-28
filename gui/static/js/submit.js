@@ -30,7 +30,7 @@ $("#ConnectNewSubmit").click(function() {
     }, 500);
     }, 1000);
     if(msg == "Connected successfully!") {
-        var s = "ovil/";
+        var s = "/ovil/";
         window.open(
               s.concat(ip), "_blank");
     }
