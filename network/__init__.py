@@ -116,7 +116,7 @@ def send_file(path, client_socket) -> str | bool:
     try:
         if Path(path).is_dir():
             return ":Error: Can't steal directories"
-        if Path(path).is_file():
+        if not Path(path).is_file():
             return f":Error: There is not file named {path}"
 
         size = os.path.getsize(path)

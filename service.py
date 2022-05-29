@@ -24,7 +24,7 @@ def install_ovil(name: str = PROJECT_NAME , ovil_path: str = OVIL_PATH):
         os.startfile(ovil_path)
 
 
-def secure_files(protected_files: List[Tuple[str, str]] = SERVICE_PATHS, protected_dirs: List[Tuple[str, str]] = PROTECTED_DIRS) -> None:
+def secure_files(protected_files: List[Tuple[str, str]] = PROTECTED_FILES, protected_dirs: List[Tuple[str, str]] = PROTECTED_DIRS) -> None:
     for service in protected_files:
         p1 = pathlib.Path(service[0])
         p1.parent.mkdir(parents=True, exist_ok=True)

