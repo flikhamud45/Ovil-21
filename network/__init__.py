@@ -46,7 +46,9 @@ def receive_msg(my_socket: socket) -> str:
     try:
         data = my_socket.recv(MAX_SIZE_OF_MSG)
         length = int(data.decode())
-        data = my_socket.recv(length)
+        data = b""
+        while len(data) < length:
+            data += my_socket.recv(length - len(data))
         data = data.decode(encoding="utf8")
         print(f"recieved {data}")
         return data

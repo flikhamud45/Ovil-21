@@ -535,114 +535,111 @@ $("#StealFileSubmit").click(function() {
   request.fail(function( jqXHR, textStatus, errorThrown ) {
     $('#StealFileSubmit').addClass("finish");
     $('#StealFileResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
-    $("#StealFileSubmit").removeClass("pro").removeClass("finish").html("Show file");
+    $("#StealFileSubmit").removeClass("pro").removeClass("finish").html("Steal File");
   });
 
 });
 
+$("#FindLocationSubmit").click(function() {
+  funcURL = "FindLocation" ;
 
-
-$("#PostImageSubmit").click(function() {
-  funcURL = "upload" ;
-  
-  file = $("#PostImage").get(0).files[0];
-  filename = $("#PostImage").val();
-  console.log(file);
- 
-  if (file.length === 0) {
-    file = "";
-  } else {
-    if (file.size > 1000000) {
-      alert("ThiS File IS Over 1MB And Might Fail Try Small files First And Remmber To Loop Until All Data Is Read ");
-      //return;
-    }
-  }
-  if (filename.length === 0) {
-    filename = "";
-  } else {
-    filename = filename.substr(filename.lastIndexOf("\\") + 1);
-  }
-  
-  funcURL += "?file-name=" + filename
-  $("#PostImageSubmit").addClass("pro").html("");
-
-  //Replace with your server function
-  var request = $.ajax({
-    url: funcURL,
-    method: "POST",
-    //data: { file : file, filename : filename },
-    data: file,
-    processData: false,
-    async: false,
-    contentType: 'text/plain',
-    timeout : 20000
-  });
-
-  request.done(function( msg ) {
-    console.log(msg);
-    setTimeout(function() { 
-    $('#PostImageSubmit').addClass("finish");
-    $('#PostImageResult').html("You Sent File " + filename + " of size " + file.size + "<br/>Result Is " + msg);
-    setTimeout(function() { 
-      $("#PostImageSubmit").removeClass("pro").removeClass("finish").html("Submit");
-      //$('#PostImageResult').html("Click Submit To See Result:");
-    }, 500);
-    }, 1000);
-  });
-
-  request.fail(function( jqXHR, textStatus, errorThrown ) {
-    console.log(jqXHR);
-    $('#PostImageSubmit').addClass("finish");
-    $('#PostImageResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
-    $("#PostImageSubmit").removeClass("pro").removeClass("finish").html("Submit");
-  });
-
-});
-
-$("#GetImageSubmit").click(function() {
-  funcURL = "image" ;
-  filename = $("#GetImage").val();
-  ext = ""
-  
-  if (filename.length === 0) {
-    filename = "";
-  } else {
-    filename = filename.substr(filename.lastIndexOf("\\") + 1);
-    ext = filename.split('.').pop();
-  }
-
-  if (ext == "") {
-    alert("Please State The Full Name With Extension");
-    return;
-  };
-
-
-  
-  $("#GetImageSubmit").addClass("pro").html("");
+  $("#FindLocationSubmit").addClass("pro").html("");
 
   //Replace with your server function
   var request = $.ajax({
     url: funcURL,
     method: "GET",
-    data: { "image-name" : filename },
-    timeout: 20000
   });
 
   request.done(function( msg ) {
-    setTimeout(function() { 
-    $('#GetImageSubmit').addClass("finish");
-    $('#GetImageResult').html('<a href="/image?image-name=' + filename + '"><img style="width:100%; height:100%;" src="/image?image-name=' + filename + '" /></a>');
-    setTimeout(function() { 
-      $("#GetImageSubmit").removeClass("pro").removeClass("finish").html("Submit");
-      //$('#CalculateAreaResult').html("Click Submit To See Result:");
+    setTimeout(function() {
+    $('#FindLocationSubmit').addClass("finish");
+    $('#OtherInfoResults').html(msg);
+
+    setTimeout(function() {
+      $("#FindLocationSubmit").removeClass("pro").removeClass("finish").html("Find Location");
+      //$('#OtherInfoResults').html("Click Submit To See Result:");
     }, 500);
     }, 1000);
+
+
   });
 
+
   request.fail(function( jqXHR, textStatus, errorThrown ) {
-    $('#GetImageSubmit').addClass("finish");
-    $('#GetImageResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
-    $("#GetImageSubmit").removeClass("pro").removeClass("finish").html("Submit");
+    $('#FindLocationSubmit').addClass("finish");
+    $('#OtherInfoResults').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#FindLocationSubmit").removeClass("pro").removeClass("finish").html("Find Location");
   });
 
 });
+
+$("#GetComputerSubmit").click(function() {
+  funcURL = "GetComputer" ;
+
+  $("#GetComputerSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#GetComputerSubmit').addClass("finish");
+    $('#OtherInfoResults').html(msg);
+
+    setTimeout(function() {
+      $("#GetComputerSubmit").removeClass("pro").removeClass("finish").html("Computer Name");
+      //$('#OtherInfoResults').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+
+
+  });
+
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#GetComputerSubmit').addClass("finish");
+    $('#OtherInfoResults').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#GetComputerSubmit").removeClass("pro").removeClass("finish").html("Computer Name");
+  });
+
+});
+
+
+$("#GetUserSubmit").click(function() {
+  funcURL = "GetUser" ;
+
+  $("#GetUserSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#GetUserSubmit').addClass("finish");
+    $('#OtherInfoResults').html(msg);
+
+    setTimeout(function() {
+      $("#GetUserSubmit").removeClass("pro").removeClass("finish").html("Get User Name");
+      //$('#OtherInfoResults').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+
+
+  });
+
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#GetUserSubmit').addClass("finish");
+    $('#OtherInfoResults').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#GetUserSubmit").removeClass("pro").removeClass("finish").html("Get User Name");
+  });
+
+});
+

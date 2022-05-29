@@ -6,6 +6,136 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<link rel="shortcut icon" href="imgs/favicon.ico">
 	<style>
+
+	.button-submit5 {
+		background: #fff;
+		-webkit-box-shadow: 0 0 0 2px #4cd964;
+		box-shadow: 0 0 0 2px #4cd964;
+		border: 0;
+		height: 40px;
+		line-height: 36px;
+		width: 22vw;
+		font-weight: 900;
+		font-size: 2vw;
+		color: #4cd964;
+		position: relative;
+		top: 5%;
+		left: 22%;
+		right: 22%;
+		 margin-right: 7vw;
+		 margin-bottom: 7vh;
+		-webkit-transform: translate(-50%, -50%);
+		-moz-transform: translate(-50%, -50%);
+		-o-transform: translate(-50%, -50%);
+		-ms-transform: translate(-50%, -50%);
+		transform: translate(-50%, -50%);
+		-webkit-border-radius: 20px;
+		border-radius: 20px;
+		-webkit-transition: all 0.2s ease;
+		-moz-transition: all 0.2s ease;
+		-o-transition: all 0.2s ease;
+		-ms-transition: all 0.2s ease;
+		transition: all 0.2s ease;
+		cursor: pointer;
+		outline: none;
+	}
+	.button-submit5:hover {
+		background: #4cd964;
+		color: #fff;
+	}
+	.button-submit5.pro {
+		background-color: #b5b5b5;
+		background-image: url("/static/imgs/loading.gif");
+		background-repeat: no-repeat;
+		background-position: center center;
+		-webkit-box-shadow: 0 0 0 2px #b5b5b5;
+		box-shadow: 0 0 0 2px #b5b5b5;
+		color: #fff;
+		-webkit-transition: background-color 0.2s ease;
+		-moz-transition: background-color 0.2s ease;
+		-o-transition: background-color 0.2s ease;
+		-ms-transition: background-color 0.2s ease;
+		transition: background-color 0.2s ease;
+	}
+	.button-submit5.finish {
+		background: #4cd964;
+		-webkit-box-shadow: 0 0 0 2px #4cd964;
+		box-shadow: 0 0 0 2px #4cd964;
+		-webkit-transition: background-color, border-color 0.2s ease;
+		-moz-transition: background-color, border-color 0.2s ease;
+		-o-transition: background-color, border-color 0.2s ease;
+		-ms-transition: background-color, border-color 0.2s ease;
+		transition: background-color, border-color 0.2s ease;
+	}
+	.button-submit5.finish:after {
+		content: "";
+		display: block;
+		position: absolute;
+		width: 14px;
+		height: 6px;
+		border-bottom: 4px #fff solid;
+		border-left: 4px #fff solid;
+		z-index: 9999;
+		-webkit-transform: rotate(-45deg);
+		-moz-transform: rotate(-45deg);
+		-o-transform: rotate(-45deg);
+		-ms-transform: rotate(-45deg);
+		transform: rotate(-45deg);
+		margin: -7px 0px 0px 44px;
+		-webkit-animation: fade 0.8s ease forwards;
+		-moz-animation: fade 0.8s ease forwards;
+		-o-animation: fade 0.8s ease forwards;
+		-ms-animation: fade 0.8s ease forwards;
+		animation: fade 0.8s ease forwards;
+	}
+
+	.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+	}
+
+	.styled-table thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+
+	}
+
+	.styled-table th,
+	.styled-table td {
+    padding: 12px 15px;
+    max-width: 30vw;
+	}
+
+	.styled-table tbody tr {
+    border-bottom: -px solid #dddddd;
+	}
+
+	.styled-table tbody tr:nth-of-type(even) {
+		background-color: #f3f3f3;
+	}
+
+	.styled-table tbody tr:last-of-type {
+		border-bottom: 2px solid #009879;
+	}
+
+	.styled-table tbody tr.active-row {
+    font-weight: bold;
+    text-align: left;
+    color: #009879;
+	}
+
+	.styled-table tbody tr.non-active-row {
+    font-weight: bold;
+    text-align: left;
+    color: #000000;
+	}
+
 	body {
 		overflow: hidden;
 		font-family: Arial, Helvetica, sans-serif;
@@ -27,7 +157,7 @@
 	.st-container > a {
 		position: fixed;
 		bottom: 0px;
-		width: 100%;
+		width: 33%;
 		cursor: pointer;
 		font-size: 16px;
 		height: 34px;
@@ -83,11 +213,11 @@
 	}
 
 	#st-control-2, #st-control-2 + a {
-		left: 50%;
+		left: 33%;
 	}
 
 	#st-control-3, #st-control-3 + a {
-		left: 40%;
+		left: 66%;
 	}
 
 	#st-control-4, #st-control-4 + a {
@@ -1112,6 +1242,12 @@
 			<input type="radio" name="radio-set" checked="checked" id="st-control-1"/>
 			<a href="#st-panel-1">Take Screenshot</a>
 
+			<input type="radio" name="radio-set" id="st-control-2"/>
+			<a href="#st-panel-2">Browser History</a>
+
+			<input type="radio" name="radio-set" id="st-control-3"/>
+			<a href="#st-panel-3">System Information</a>
+
 			<div class="st-scroll">
 
 				<section class="st-panel" id="st-panel-1">
@@ -1134,6 +1270,51 @@
 						<div id="ScreenshotResults" class="results2"></div>
 					{% endif %}
                     <button id="TakeScreenshot" class="button-submit2" onclick='NewTab("screenshot")'>Take Screenshot</button>
+				</section>
+
+
+				<section class="st-panel" id="st-panel-2">
+					<div class="st-deco" data-icon="✦"></div>
+                    <h2>Browser History</h2>
+					{% if history %}
+					<div class="st-centered">
+						<div class="st-box">
+							<div class="row">
+								<table class="styled-table">
+									<thead>
+										<tr>
+											<th>Site</th>
+											<th>Date</th>
+										</tr>
+										<tbody>
+										{% for date, site, date2, site2 in history_data %}
+											<tr class="non-active-row">
+												<td>{{ site }}</td>
+												<td>{{ date }}</td>
+											</tr>
+											<tr class="active-row">
+												<td>{{ site2 }}</td>
+												<td>{{ date2 }}</td>
+											</tr>
+										{% endfor %}
+										</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					{% else %}
+						<div id="historyError" class="results2">{{ history_error }}</div>
+					{% endif %}
+				</section>
+
+				<section class="st-panel" id="st-panel-3">
+					<div class="st-deco" data-icon="✦"></div>
+                    <h2>Other Information</h2>
+					<div id="OtherInfoResults" class="results2"></div>
+					<button id="FindLocationSubmit" class="button-submit5">Find Location</button>
+					<button id="GetComputerSubmit" class="button-submit5">Computer Name</button>
+					<button id="GetUserSubmit" class="button-submit5">Get User Name</button>
+
 				</section>
 
 			</div><!-- // st-scroll -->

