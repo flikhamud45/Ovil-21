@@ -43,7 +43,7 @@ class Client:
                 send(str(Massages.SEP.value).join(msg), self.socket)
                 code, filename = receive_file(self.socket)
                 if not code:
-                    return Massages.NOT_OK, filename
+                    return Massages.NOT_OK.value, filename
                 result = receive_msg(self.socket)
                 return result, filename
 

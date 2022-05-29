@@ -81,7 +81,7 @@ def receive_file(my_socket: socket) -> (bool, str):
     """
 
     data = receive_msg(my_socket)
-    if data.startswith("Error:") or data in [m.value for m in Massages]:
+    if data.startswith(":Error:") or data in [m.value for m in Massages]:
         print(data)
         return False, data
 
@@ -107,13 +107,17 @@ def receive_file(my_socket: socket) -> (bool, str):
     return not error, str(path)
 
 
-def send_file(path, client_socket) -> bool:
+def send_file(path, client_socket) -> str | bool:
     """send a file to the client. if succeeded return success, else return error massage
     :param path: path of the file to send
     :param client_socket: the socket of the client to send to
     :return: return whether succeeded
     """
     try:
+        if Path(path).is_dir():
+            return ":Error: Can't steal directories"
+        if Path(path).is_file():
+            return f":Error: There is not file named {path}"
 
         size = os.path.getsize(path)
         # print(f"[*] Sending the file size {size}")
@@ -131,5 +135,5 @@ def send_file(path, client_socket) -> bool:
         # print(f"The file {path} has been sent")
     except Exception as e:
         # print(f"Couldn't send file because {e}")
-        return False
+        return ":Error: " + str(e)
     return True
