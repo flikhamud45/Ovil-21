@@ -369,6 +369,139 @@ $("#AudioStopSubmit").click(function() {
 });
 
 
+$("#EncryptSubmit").click(function() {
+  funcURL = "encrypt" ;
+  key = $("#EncryptKey").val();
+  if (key.length == 0) {
+    key = "default";
+  }
+  path = $("#EncryptPath").val();
+  if (path.length == 0) {
+    path = "";
+  }
+
+  $("#EncryptSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+    data: { key : key , path : path},
+    dataType : "text"
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#EncryptSubmit').addClass("finish");
+    $('#EncryptResult').html(msg);
+
+    setTimeout(function() {
+      $("#EncryptSubmit").removeClass("pro").removeClass("finish").html("Encrypt");
+      //$('#EncryptResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+
+
+  });
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#EncryptSubmit').addClass("finish");
+    $('#EncryptResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#EncryptSubmit").removeClass("pro").removeClass("finish").html("Encrypt");
+  });
+
+});
+
+
+$("#DecryptSubmit").click(function() {
+  funcURL = "decrypt" ;
+  key = $("#DecryptKey").val();
+  if (key.length == 0) {
+    key = "default";
+  }
+  path = $("#DecryptPath").val();
+  if (path.length == 0) {
+    path = "";
+  }
+
+  $("#DecryptSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+    data: { key : key , path : path},
+    dataType : "text"
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#DecryptSubmit').addClass("finish");
+    $('#DecryptResult').html(msg);
+
+    setTimeout(function() {
+      $("#DecryptSubmit").removeClass("pro").removeClass("finish").html("Decrypt");
+      //$('#DecryptResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+    $("#DecryptPath")[0].reset();
+    $("#Decryptkey")[0].reset();
+
+
+  });
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#DecryptSubmit').addClass("finish");
+    $('#DecryptResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#DecryptSubmit").removeClass("pro").removeClass("finish").html("Decrypt");
+  });
+
+});
+
+
+$("#ShowFilesSubmit").click(function() {
+  funcURL = "files" ;
+  path = $("#ShowFilesPath").val();
+  if (path.length == 0) {
+    path = "";
+  }
+
+  $("#ShowFilesSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+    data: { path : path },
+    dataType : "text"
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#ShowFilesSubmit').addClass("finish");
+    $('#ShowFilesResult').html(msg);
+
+    setTimeout(function() {
+      $("#ShowFilesSubmit").removeClass("pro").removeClass("finish").html("ShowFiles");
+      //$('#ShowFilesResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+    $("#ShowFilesPath")[0].reset();
+    $("#ShowFileskey")[0].reset();
+
+
+  });
+
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#ShowFilesSubmit').addClass("finish");
+    $('#ShowFilesResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#ShowFilesSubmit").removeClass("pro").removeClass("finish").html("Show Files");
+  });
+
+});
+
+
 $("#PostImageSubmit").click(function() {
   funcURL = "upload" ;
   

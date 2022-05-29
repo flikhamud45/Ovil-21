@@ -1,7 +1,7 @@
 
 from enum import Enum
 
-PORT = 8802
+PORT = 8803
 IP = "127.0.0.1"
 ADDRESS = (IP, PORT)
 MAX_SIZE_OF_MSG = 10  # the max length is 10 ^ this number

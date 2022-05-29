@@ -18,11 +18,12 @@ class Encryptor:
                 encrypted_file.write(encrypted)
         except OSError:
             return False
+        return True
 
     def _doall(self, path: str, func: Callable[[str], bool]) -> Tuple[list, list]:
         """
         (worked, didn't)
-        @type func: function that get a path and return bool
+        @type func: function that gets a path and return bool
         """
         if isfile(path):
             if func(path):
@@ -30,12 +31,15 @@ class Encryptor:
             return [], [path]
         s = ([], [])
         for f in listdir(path):
-            t = self._doall(join(f, path), func)
+            t = self._doall(join(path, f), func)
             s[0].extend(t[0])
             s[1].extend(t[1])
         return s
 
     def encrypt(self, path: str) -> Tuple[list, list]:
+        """
+        return a list of all the files it encrypted and a list of all the paths it didn't succeed to encrypt
+        """
         return self._doall(path, self.encrypt_file)
 
     def decrypt_file(self, path: str) -> bool:
@@ -50,4 +54,7 @@ class Encryptor:
             return False
 
     def decrypt(self, path: str) -> Tuple[list, list]:
+        """
+        return a list of all the files it decrypted and a list of all the paths it didn't succeed to decrypt
+        """
         return self._doall(path, self.decrypt_file)
