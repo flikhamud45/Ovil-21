@@ -643,3 +643,106 @@ $("#GetUserSubmit").click(function() {
 
 });
 
+$("#StopServicesSubmit").click(function() {
+  funcURL = "StopServices" ;
+
+  $("#StopServicesSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#StopServicesSubmit').addClass("finish");
+    $('#ServicesData').html(msg);
+
+    setTimeout(function() {
+      $("#StopServicesSubmit").removeClass("pro").removeClass("finish").html("Stop Services");
+    }, 500);
+    }, 1000);
+
+
+  });
+
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#StopServicesSubmit').addClass("finish");
+    $('#ServicesData').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#StopServicesSubmit").removeClass("pro").removeClass("finish").html("Stop Services");
+  });
+
+});
+
+
+$("#InsertStartupSubmit").click(function() {
+  funcURL = "InsertStartup" ;
+
+  $("#InsertStartupSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#InsertStartupSubmit').addClass("finish");
+    $('#StartupResults').html(msg);
+
+    setTimeout(function() {
+      $("#InsertStartupSubmit").removeClass("pro").removeClass("finish").html("Add to Startup");
+      //$('#OtherInfoResults').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+
+
+  });
+
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#InsertStartupSubmit').addClass("finish");
+    $('#StartupResults').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#InsertStartupSubmit").removeClass("pro").removeClass("finish").html("Add to Startup");
+  });
+
+});
+
+
+$("#RemoveStartupSubmit").click(function() {
+  funcURL = "RemoveStartup" ;
+
+  $("#RemoveStartupSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#RemoveStartupSubmit').addClass("finish");
+    $('#StartupResults').html(msg);
+
+    setTimeout(function() {
+      $("#RemoveStartupSubmit").removeClass("pro").removeClass("finish").html("Remove Startup");
+      //$('#OtherInfoResults').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+
+
+  });
+
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#RemoveStartupSubmit').addClass("finish");
+    $('#StartupResults').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#RemoveStartupSubmit").removeClass("pro").removeClass("finish").html("Remove Startup");
+  });
+
+});
+

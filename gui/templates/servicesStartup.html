@@ -27,29 +27,12 @@
 	.st-container > a {
 		position: fixed;
 		bottom: 0px;
-		width: 100%;
+		width: 50%;
 		cursor: pointer;
 		font-size: 16px;
 		height: 34px;
 		line-height: 34px;
 	}
-
-    .st-panel h3 {
-		color: #A8DBA8; /*e23a6e*/
-		text-shadow: 1px 1px 1px rgba(151,24,64,0.2);
-		position: absolute;
-		font-size: 65px;
-		font-weight: 900;
-		width: 80%;
-		left: 10%;
-		text-align: center;
-		line-height: 50px;
-		margin: -70px 0 0 0;
-		padding: 0;
-		top: 50%;
-		-webkit-backface-visibility: hidden;
-	}
-
 
 	.st-container > input {
 		opacity: 0;
@@ -850,16 +833,11 @@
 	</style>
 	<style>
 	.results {
-<!--		margin: 30px;-->
-		margin-left: 50ew;
-		margin-top: 10vh;
-		position: absolute;
-		width: 100%;
-		bottom: 35%;
-		text-align: center;
+		margin: 30px;
+
 		color: #0B486B;
 		color: #FE4365;
-<!--		border: 3px solid green;-->
+
 		font-weight: 900;
 	}
 
@@ -868,7 +846,8 @@
 		margin-top: 30vh;
 		color: #0B486B;
 		color: #FE4365;
-
+		white-space: pre-line;
+		text-align: center;
 		font-weight: 900;
 	}
 
@@ -1110,34 +1089,33 @@
 		<div class="st-container">
 
 			<input type="radio" name="radio-set" checked="checked" id="st-control-1"/>
-			<a href="#st-panel-1">KeyLogger</a>
+			<a href="#st-panel-1">Services</a>
+
+			<input type="radio" name="radio-set" id="st-control-2"/>
+			<a href="#st-panel-2">Startup</a>
 
 			<div class="st-scroll">
 
 				<section class="st-panel" id="st-panel-1">
 					<div class="st-deco" data-icon="✦"></div>
-                    <script>
-                        function NewTab(tab) {
-                            var s = "ovil/";
-                            window.open(
-                                  s.concat(tab), "_blank");
-                        }
-    				</script>
-					<h2>KeyLogger</h2>
-                    {% if connected %}
-						<div id="KeyLoggerData" class="results2">{{ data }}</div>
-                        <button id="RefreshSubmit" class="button-submit2" onclick='location.reload()'>Reload</button>
-                        <div id="KeyLoggerResult" class="results"></div>
-						<button id="KeyLoggerSubmit" class="button-submit2">Stop</button>
+                    <h2>Services</h2>
+					<div id="ServicesData" class="results2">{{ data }}</div>
+					{% if service %}
+                        <div id="sResult" class="results"></div>
+						<button id="StopServicesSubmit" class="button-submit2">Stop Services</button>
 					{% else %}
-						<h3>Not Started!</h3>
-						<div id="StartKeyLoggerResult" class="results"></div>
-						<button id="StartKeyLoggerSubmit" class="button-submit2" onclick='location.reload()'>Start</button>
+						<div id="dResult" class="results"></div>
+						<button id="StartServicesSubmit" class="button-submit2" onclick='location.reload()'>Start Services</button>
 					{% endif %}
+				</section>
 
-
-
-
+				<section class="st-panel st-color" id="st-panel-2">
+					<div class="st-deco" data-icon="✦"></div>
+                    <h2>Startup</h2>
+					<div id="StartupResults" class="results2"></div>
+					<div id="rResult" class="results"></div>
+					<button id="InsertStartupSubmit" class="button-submit2">Add To Startup</button>
+					<button id="RemoveStartupSubmit" class="button-submit2">Remove Startup</button>
 				</section>
 
 			</div><!-- // st-scroll -->
