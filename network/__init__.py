@@ -26,7 +26,7 @@ def check_port(port: int) -> bool:
     return 1024 <= port <= 65535 # port 0 - 1023 are well know ports
 
 
-def send(msg, client_socket: socket) -> None:
+def send(msg: str, client_socket: socket) -> None:
     """ sending a message to a client by sending the length of the message first
     :param msg: the message to send
     :param client_socket: the client to send the message

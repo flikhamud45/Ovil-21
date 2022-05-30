@@ -44,13 +44,16 @@ def handle_disconnection(func: Callable) -> Callable:
     def inner(ip, *arg, **kargs):
         if ip not in ovils:
             return "This ovil is disconnected! Connect and try again"
+        if not ovils[ovils.index(ip)].connected:
+            ovils.remove(ip)
+            return "This ovil has disconnected! Connect and try again"
         return func(ip, *arg, **kargs)
     inner.__name__ = func.__name__
     return inner
 
 
 def is_connected(ip: str) -> bool:
-    return ip in [ovil.ip for ovil in ovils]
+    return ip in ovils and ovils[ovils.index(ip)].connected
 
 
 @app.route('/ovil/<ip>/connect/')
@@ -64,7 +67,6 @@ def connect_without_param(ip: str) -> str:
 def connect_by_param() -> str:
     ip = request.args.get("ip_address")
     return connect(ip)
-    # TODO: add real connection
 
 
 @handle_errors
@@ -74,7 +76,9 @@ def connect(ip: str) -> str:
     global ovils
     # time.sleep(2)
     if ip in ovils:
-        return "You've already connected to this ovil"
+        if ovils[ovils.index(ip)].connected:
+            return "You've already connected to this ovil"
+        ovils.remove(ip)
     ovil = Client(ip)
     try:
         ovil.connect_to_server()

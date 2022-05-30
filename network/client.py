@@ -10,13 +10,13 @@ class Client:
         self.mitm_info = ["Dddd", "Ddd"]
         self.socket = socket()
         self.ip = ip
-        self.connected = False
+        self.__connected = False
 
     def connect_to_server(self):
         t = self.socket.gettimeout()
         self.socket.settimeout(TIMEOUT_SOCKET)
         self.socket.connect((self.ip, PORT))
-        self.connected = True
+        self.__connected = True
         self.socket.settimeout(t)
 
     def __eq__(self, other) -> bool:
@@ -25,11 +25,21 @@ class Client:
         return other == self.ip
 
     def disconnect(self):
-        self.connected = False
+        self.__connected = False
+        self.socket.close()
         pass
 
+    @property
+    def connected(self):
+        try:
+            send("ping", self.socket)
+            ping = receive_msg(self.socket)
+            return ping == "ping"
+        except ConnectionError:
+            return False
+
     def send_command(self, command: str, params: List[str]):
-        if not self.connected:
+        if not self.__connected:
             return "This ovil is not connected"
         match command:
             case "start_sniffing_on_net":
