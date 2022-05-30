@@ -70,41 +70,52 @@ def infinite_service(service_name: str) -> None:
             pass
 
 
-def check_status(service_name: str, nssm_path: str = "nssm.exe") -> Tuple[str, str]:
+def check_status(service_name: str, nssm_path: str = NSSM_PATH) -> Tuple[str, str]:
     return run(f"{nssm_path} status {service_name}")
 
 
-def is_started(service_name: str, nssm_path: str = "nssm.exe") -> bool:
+def is_started(service_name: str, nssm_path: str = NSSM_PATH) -> bool:
     return check_status(service_name, nssm_path)[0] == "SERVICE_RUNNING"
 
 
-def is_installed(service_name: str, nssm_path: str = "nssm.exe") -> bool:
+def is_installed(service_name: str, nssm_path: str = NSSM_PATH) -> bool:
     status, err = check_status(service_name, nssm_path)
     return not err.startswith("Can't open service!") and \
            (status == "SERVICE_RUNNING" or status == "SERVICE_STOPPED" or status == "SERVICE_PAUSED")
 
 
-def start_service(service_name: str, nssm_path: str = "nssm.exe") -> Tuple[str, str]:
+def start_service(service_name: str, nssm_path: str = NSSM_PATH) -> Tuple[str, str]:
     return run(f"{nssm_path} start {service_name}")
 
 
-def remove_service(service_name: str, nssm_path: str = "nssm.exe") -> tuple[tuple[str, str], Tuple[str, str]]:
+def remove_service(service_name: str, nssm_path: str = NSSM_PATH) -> tuple[tuple[str, str], Tuple[str, str]]:
     r1 = run(f"{nssm_path} stop {service_name}")
     r2 = run(f"{nssm_path} remove {service_name} confirm")
     return r1, r2
 
 
-def install_service(service_name: str, service_path: str, nssm_path: str = "nssm.exe", start: bool = True,
-                    override: bool = False, directory_path=None) -> None:
+def install_service(service_name: str, service_path: str, nssm_path: str = NSSM_PATH, start: bool = True,
+                    override: bool = False, directory_path=None) -> str:
+    msg = ""
     if not is_installed(service_name, nssm_path):
-        print(run(f"{nssm_path} install {service_name} {service_path}"))
+        r = (run(f"{nssm_path} install {service_name} {service_path}"))
+        print(r)
+        msg += r
         if directory_path:
-            print(run(f"{nssm_path} set {service_name} AppDirectory {directory_path}"))
+            r = (run(f"{nssm_path} set {service_name} AppDirectory {directory_path}"))
+            print(r)
+            msg += r
     elif override:
-        print(remove_service(service_name, nssm_path))
-        install_service(service_name, service_path, nssm_path, False, False, directory_path)
+        r = (remove_service(service_name, nssm_path))
+        print(r)
+        msg += r
+        r = install_service(service_name, service_path, nssm_path, False, False, directory_path)
+        msg += r
     if start and not is_started(service_name, nssm_path):
-        print(start_service(service_name, nssm_path))
+        r = (start_service(service_name, nssm_path))
+        print(r)
+        msg += r
+    return msg
 
 
 # class Service(win32serviceutil.ServiceFramework):

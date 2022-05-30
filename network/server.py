@@ -51,11 +51,11 @@ class Server:
                 if len(params) == 1:
                     return self.execute_command(command, [params[0], self.client_address[0], MITM_DEFAULT_PORT])
             case "get_commands":
-                return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")])
+                return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")]) + f"\n put {Massages.DEFAULT_PARAM} for default param"
             case "help":
-                return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")])
+                return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")]) + f"\n put {Massages.DEFAULT_PARAM} for default param"
             case "?":
-                return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")])
+                return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")]) + f"\n put {Massages.DEFAULT_PARAM} for default param"
 
 
         # if command in SPY_COMMANDS:
