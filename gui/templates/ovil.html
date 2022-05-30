@@ -6,6 +6,14 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<link rel="shortcut icon" href="imgs/favicon.ico">
 	<style>
+	.results2 {
+		margin: 30px;
+		margin-top: 30vh;
+		color: #0B486B;
+		color: #FE4365;
+
+		font-weight: 900;
+	}
 	body {
 		overflow: hidden;
 		font-family: Arial, Helvetica, sans-serif;
@@ -1280,6 +1288,87 @@
 	}
 
 
+	.button-submit6 {
+		background: #fff;
+		-webkit-box-shadow: 0 0 0 2px #4cd964;
+		box-shadow: 0 0 0 2px #4cd964;
+		border: 0;
+		height: 40px;
+		line-height: 36px;
+		width: 42vw;
+		font-weight: 900;
+		font-size: 2vw;
+		color: #4cd964;
+		position: absolute;
+		margin-top: 30vh;
+		margin-bottom: 30vh;
+		left: 50%;
+		bottom: 30%;
+		-webkit-transform: translate(-50%, -50%);
+		-moz-transform: translate(-50%, -50%);
+		-o-transform: translate(-50%, -50%);
+		-ms-transform: translate(-50%, -50%);
+		transform: translate(-50%, -50%);
+		-webkit-border-radius: 20px;
+		border-radius: 20px;
+		-webkit-transition: all 0.2s ease;
+		-moz-transition: all 0.2s ease;
+		-o-transition: all 0.2s ease;
+		-ms-transition: all 0.2s ease;
+		transition: all 0.2s ease;
+		cursor: pointer;
+		outline: none;
+	}
+	.button-submit6:hover {
+		background: #4cd964;
+		color: #fff;
+	}
+	.button-submit6.pro {
+		background-color: #b5b5b5;
+		background-image: url("/static/imgs/loading.gif");
+		background-repeat: no-repeat;
+		background-position: center center;
+		-webkit-box-shadow: 0 0 0 2px #b5b5b5;
+		box-shadow: 0 0 0 2px #b5b5b5;
+		color: #fff;
+		-webkit-transition: background-color 0.2s ease;
+		-moz-transition: background-color 0.2s ease;
+		-o-transition: background-color 0.2s ease;
+		-ms-transition: background-color 0.2s ease;
+		transition: background-color 0.2s ease;
+	}
+	.button-submit6.finish {
+		background: #4cd964;
+		-webkit-box-shadow: 0 0 0 2px #4cd964;
+		box-shadow: 0 0 0 2px #4cd964;
+		-webkit-transition: background-color, border-color 0.2s ease;
+		-moz-transition: background-color, border-color 0.2s ease;
+		-o-transition: background-color, border-color 0.2s ease;
+		-ms-transition: background-color, border-color 0.2s ease;
+		transition: background-color, border-color 0.2s ease;
+	}
+	.button-submit6.finish:after {
+		content: "";
+		display: block;
+		position: absolute;
+		width: 14px;
+		height: 6px;
+		border-bottom: 4px #fff solid;
+		border-left: 4px #fff solid;
+		z-index: 9999;
+		-webkit-transform: rotate(-45deg);
+		-moz-transform: rotate(-45deg);
+		-o-transform: rotate(-45deg);
+		-ms-transform: rotate(-45deg);
+		transform: rotate(-45deg);
+		margin: -7px 0px 0px 44px;
+		-webkit-animation: fade 0.8s ease forwards;
+		-moz-animation: fade 0.8s ease forwards;
+		-o-animation: fade 0.8s ease forwards;
+		-ms-animation: fade 0.8s ease forwards;
+		animation: fade 0.8s ease forwards;
+	}
+
 
 	#reset {
 		position: absolute;
@@ -1454,20 +1543,11 @@
 
 				<section class="st-panel" id="st-panel-5">
 					<div class="st-deco" data-icon="✦"></div>
-					<h2>4.11 Get Posted Image</h2>
-					<div class="st-centered">
-						<div class="st-box">
-							<div class="row">
-								<div id="GetImageResult" class="results">Click Submit To See Result:</div>
-								<span>
-									<input class="balloon" id="GetImage" type="text" placeholder="String Image Name" /><label for="GetImage">Image</label>
-								</span>
-								<button id="GetImageSubmit" class="button-submit">Submit</button>
+					<h2>Remote Control</h2>
 
-							</div>
-							<div class="info">Support The Get Image Function Then Press The Button</div>
-						</div>
-					</div>
+							<button id="RemoteControlOpener" class="button-submit6" onclick='NewTab("RemoteControl")'>Open Remote Control</button>
+
+
 				</section>
 
 			</div><!-- // st-scroll -->
