@@ -11,6 +11,7 @@ def is_admin():
 
 def make_admin():
     if is_admin():
+        print("The program has admin rights")
         return True
     else:
         print("Re-run the program with admin rights")

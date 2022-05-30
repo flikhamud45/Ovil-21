@@ -1,8 +1,11 @@
 # import os
 from network.server import Server
 from network import consts
-from spying import Spy
+from spying import Spy, admin
 import time
+
+if not admin.make_admin():
+        exit()
 s = Server()
 s.wait_for_client()
 s = Spy()

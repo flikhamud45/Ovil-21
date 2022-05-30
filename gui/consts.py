@@ -1,2 +1,3 @@
 DEFAULT_PORT = 5000
 GOOD_DIRS = ["css", "imgs", "js"]
+MAX_TIME_TO_WAIT_FOR_CRACKING_HASH = 7
