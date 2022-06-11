@@ -894,16 +894,11 @@ def run(ip):
 
 def main():
     try:
-        webbrowser.open_new(r"http://127.0.0.1:5000")
-        app.run(debug=False)
+        webbrowser.open_new(r"http://127.0.0.1:"+DEFAULT_PORT)
+        app.run(debug=False, port=DEFAULT_PORT)
     finally:
         for ovil in ovils:
             ovil.disconnect()
 
 if __name__ == '__main__':
     main()
-
-
-# TODO: make setup file
-
-
