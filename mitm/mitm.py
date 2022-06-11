@@ -78,6 +78,7 @@ class MITM(CoroutineClass):
         """
         Runs the MITM server.
         """
+        from spying.snnifing import create_crypto2
         try:
             server = await asyncio.start_server(
                 lambda reader, writer: self.mitm(

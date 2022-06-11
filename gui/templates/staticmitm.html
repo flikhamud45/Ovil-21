@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title>Ovil-21</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	<link rel="shortcut icon" href="imgs/favicon.ico">
+	<link rel="shortcut icon" href="/static/imgs/favicon.ico">
 	<style>
 	body {
 		overflow: hidden;
@@ -1089,12 +1089,16 @@
                     <div class="st-centered">
                         <div class="st-box">
                             <div class="row">
-                                <div id="StaticMitmResult" class="results"></div>
-                                <span>
-                                <input class="balloon" id="StaticMitm" type="text" placeholder="file name" /><label for="StaticMitmX">name</label>
-                                </span>
-                                <button id="StaticMitmSubmit" class="button-submit">Start MITM</button>
-                                </div>
+								<div id="StaticMitmResult" class="results"></div>
+								{% if started %}
+									<button id="StaticMitmStopSubmit" class="button-submit">Stop MITM</button>
+								{% else %}
+									<span>
+									<input class="balloon" id="StaticMitm" type="text" placeholder="file name" /><label for="StaticMitmX">name</label>
+									</span>
+									<button id="StaticMitmSubmit" class="button-submit">Start MITM</button>
+									</div>
+								{% endif %}
 						</div>
 					</div>
 				</section>

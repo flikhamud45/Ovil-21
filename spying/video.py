@@ -13,6 +13,9 @@ from spying.consts import DEFAULT_VIDEO_NAME, DEFAULT_AUDIO_NAME, FFMPEG_PATH
 
 
 class Recorder:
+    """
+    abstract class for recording.
+    """
     def __init__(self, filename):
         self.start_time = 0
         self.end_time = 0
@@ -21,6 +24,9 @@ class Recorder:
 
     @property
     def length(self) -> Union[int, float]:
+        """
+        the length of the recording so far
+        """
         if self.start_time == 0:
             return 0
         elif self.end_time == 0:
@@ -29,9 +35,15 @@ class Recorder:
             return self.end_time - self.start_time
 
     def _record(self) -> None:
+        """
+        Do the record
+        """
         raise NotImplemented
 
     def stop(self) -> bool:
+        """
+        Stops the record
+        """
         raise NotImplemented
 
     def start(self) -> None:
@@ -41,7 +53,7 @@ class Recorder:
 
 
 class AudioRecorder(Recorder):
-    """Audio class based on pyAudio and Wave"""
+    """Audio class to record audio simply"""
     def __init__(self, filename=DEFAULT_AUDIO_NAME, rate=44100, fpb=1024, channels=None):
         super(AudioRecorder, self).__init__(filename)
         if not self.filename.endswith(".wav"): self.filename += ".wav"
@@ -58,7 +70,9 @@ class AudioRecorder(Recorder):
         self.audio_frames = []
 
     def _record(self):
-        """Audio starts being recorded"""
+        """
+        Audio starts being recorded
+        """
         self.open = True
         self.stream.start_stream()
         self.start_time = time.time()
@@ -69,7 +83,9 @@ class AudioRecorder(Recorder):
                 break
 
     def stop(self):
-        """Finishes the audio recording therefore the thread too"""
+        """
+        Finishes the audio recording therefore the thread too
+        """
         if self.open:
             self.open = False
             self.stream.stop_stream()
@@ -89,6 +105,7 @@ class AudioRecorder(Recorder):
 
 
 class VideoRecorder(Recorder):
+    """Video class to record Video simply"""
     def __init__(self, filename=DEFAULT_VIDEO_NAME, fourcc="MJPG", sizex=None, sizey=None, camindex=None, fps=30):
         super(VideoRecorder, self).__init__(filename)
         if not self.filename.endswith(".avi"): self.filename += ".avi"
@@ -104,7 +121,9 @@ class VideoRecorder(Recorder):
         self.frame_counts = 1
 
     def _record(self):
-        """starts to record"""
+        """
+        Do to record
+        """
         self.start_time = time.time()
         self.open = True
         while self.open:
@@ -123,7 +142,9 @@ class VideoRecorder(Recorder):
                 break
 
     def stop(self):
-        """Finishes the video recording therefore the thread too"""
+        """
+        Finishes the video recording therefore the thread too
+        """
         if self.open:
             self.open = False
             self.video_out.release()

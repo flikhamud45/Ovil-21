@@ -30,12 +30,16 @@ def create_shortcut(shortcut_path, target, arguments='', working_dir='') -> bool
         shortcut.Save();'''
 
     fd, path = tempfile.mkstemp('.js')
+    r = None
     try:
         with os.fdopen(fd, 'w') as f:
             f.write(js_content)
-        subprocess.run([R'wscript.exe', path])
+        r = subprocess.run([R'wscript.exe', path], stderr=subprocess.PIPE)
     finally:
         os.unlink(path)
+    if not r:
+        return False
+
     return True
 
 

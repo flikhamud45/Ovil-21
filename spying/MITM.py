@@ -39,12 +39,13 @@ def stop_sniffing() -> bool:
         p.terminate()
     # os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0')
     # sys.stdout.write("yes")
+    # disable the proxy
     set_reg("ProxyEnable", 0, winreg.REG_DWORD)
     return True
 
 
-def is_MITM_runs():
-    return p and p.is_alive()
+def is_MITM_runs() -> bool:
+    return p is not None and p.is_alive()
 
 
 def main():

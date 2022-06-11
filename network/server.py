@@ -9,13 +9,15 @@ from inspect import signature
 class Server:
     def __init__(self):
         self.spy = Spy()
-        self.socket = socket()
+        self.socket: socket = socket()
         self.client: Optional[socket.socket] = None
         self.client_address: Optional[Tuple[str, int]] = None
-        self.client_live = False
+        self.client_live: bool = False
 
     def wait_for_client(self):
+        print("binding to the address!!")
         self.socket.bind(("0.0.0.0", PORT))
+        print("finished binding to the address!!")
         while True:
             self.socket.listen()
             print(f"waiting for server")
@@ -24,7 +26,11 @@ class Server:
             self.client_live = True
             self.wait_for_command()
 
+
     def wait_for_command(self):
+        """
+        Waits for command. if got command execute it, return the answer and wait for another command.
+        """
         while True:
             try:
                 print(f"waiting for command")
@@ -35,12 +41,19 @@ class Server:
             except ValueError:
                 self.client_live = False
                 return
+            if data == Massages.BYE.value:
+                self.client_live = False
+                return
             data = data.split(str(Massages.SEP.value))
             command, params = data[0], data[1::]
             result = self.execute_command(command, params)
             send(result, self.client)
 
     def execute_command(self, command: str, params: list) -> str:
+        """
+        Executes one command and return the result of this command in str
+        gets the command and a list of its params
+        """
         match command:
             case str(Massages.EXIT.value):
                 return str(Massages.BYE.value)
@@ -71,6 +84,8 @@ class Server:
                     function = run_command
                 case _:
                     return str(Massages.INVALID_COMMAND.value)
+        if len(params) == 1 and params[0] == "?":
+            return parse_methods([(function, command)])
         if not is_valid_num_of_params(function, len(params)) and function != run_command:
             return str(Massages.INVALID_NUMBER_OF_PARAMS.value)
         if not cast_params(function, params) and function != run_command:
@@ -148,11 +163,12 @@ def get_commands(cls: type) -> str:
 
 def parse_methods(method_list: List[Tuple[Callable, str]]):
     """
-    gets a list if tuples of nethod and name and return a descryption of each method
+    Gets a list if tuples of method and name and return a description of each method
     """
     msg = ""
     for method, name in method_list:
-        msg += f"{name} - \n"
+        msg += f"{name} - \n" \
+               f"\t{method.__doc__}"
         sig = signature(method)
         for par_name, param in sig.parameters.items():
             msg += f"\t{par_name}: \n" \

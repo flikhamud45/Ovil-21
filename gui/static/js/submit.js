@@ -134,7 +134,7 @@ $("#StaticMitmSubmit").click(function() {
     $('#StaticMitmResult').html(msg);
 
     setTimeout(function() {
-      $("#StaticMitmSubmit").removeClass("pro").removeClass("finish").html("Connect");
+      $("#StaticMitmSubmit").removeClass("pro").removeClass("finish").html("Start");
       //$('#StaticMitmResult').html("Click Submit To See Result:");
     }, 500);
     }, 1000);
@@ -143,10 +143,43 @@ $("#StaticMitmSubmit").click(function() {
   request.fail(function( jqXHR, textStatus, errorThrown ) {
     $('#StaticMitmSubmit').addClass("finish");
     $('#StaticMitmResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
-    $("#StaticMitmSubmit").removeClass("pro").removeClass("finish").html("Connect");
+    $("#StaticMitmSubmit").removeClass("pro").removeClass("finish").html("Start");
   });
 
 });
+
+
+$("#StaticMitmStopSubmit").click(function() {
+  funcURL = "stop" ;
+
+  $("#StaticMitmStopSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#StaticMitmStopSubmit').addClass("finish");
+    $('#StaticMitmResult').html(msg);
+
+    setTimeout(function() {
+      $("#StaticMitmStopSubmit").removeClass("pro").removeClass("finish").html("Stop");
+      //$('#StaticMitmResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+  });
+
+  request.fail(function( jqXHR, textStatus, errorThrown ) {
+    $('#StaticMitmStopSubmit').addClass("finish");
+    $('#StaticMitmResult').html("Request failed: " + textStatus + " Error -  " + errorThrown + "</br> " + jqXHR.responseText);
+    $("#StaticMitmStopSubmit").removeClass("pro").removeClass("finish").html("Stop");
+  });
+
+});
+
 
 $("#KeyLoggerSubmit").click(function() {
   funcURL = "stop" ;
@@ -744,5 +777,31 @@ $("#RemoveStartupSubmit").click(function() {
     $("#RemoveStartupSubmit").removeClass("pro").removeClass("finish").html("Remove Startup");
   });
 
+});
+
+$("#DynamicMitmSubmit").click(function() {
+  funcURL = "stop" ;
+
+  $("#DynamicMitmSubmit").addClass("pro").html("");
+
+  //Replace with your server function
+  var request = $.ajax({
+    url: funcURL,
+    method: "GET",
+  });
+    q = $('#DynamicMitmData').val()
+  request.done(function( msg ) {
+    setTimeout(function() {
+    $('#DynamicMitmSubmit').addClass("finish");
+//    $('#DynamicMitmResult').html(msg);
+
+    setTimeout(function() {
+      $("#DynamicMitmSubmit").removeClass("pro").removeClass("finish").html("Stop");
+      $("#RefreshSubmit").html("Start");
+      $('#DynamicMitmData').html("<center>" + msg + "</center>");
+      //$('#DynamicMitmResult').html("Click Submit To See Result:");
+    }, 500);
+    }, 1000);
+  });
 });
 

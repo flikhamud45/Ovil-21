@@ -5,11 +5,17 @@ from typing import Tuple, Callable
 
 
 class Encryptor:
+    """
+    class for encrypting and decrypting files and directories
+    """
     def __init__(self, key=None):
         self.encryption_key = key.encode() if key else Fernet.generate_key()
         self.fernet = Fernet(self.encryption_key)
 
     def encrypt_file(self, path) -> bool:
+        """
+        Encrypt one file and return whether succeeded or not
+        """
         try:
             with open(path, 'rb') as f:
                 original = f.read()
@@ -43,6 +49,9 @@ class Encryptor:
         return self._doall(path, self.encrypt_file)
 
     def decrypt_file(self, path: str) -> bool:
+        """
+        decrypt one file and return whether succeeded or not
+        """
         try:
             with open(path, 'rb') as encrypted_file:
                 encrypted = encrypted_file.read()

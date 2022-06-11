@@ -39,21 +39,26 @@ def send(msg: str, client_socket: socket) -> None:
 
 
 def receive_msg(my_socket: socket) -> str:
-    """receive a message from the server with a length of 999 max
+    """receive a message from the server
     :param my_socket: the socket to get from
     :return: the message
     """
     try:
-        data = my_socket.recv(MAX_SIZE_OF_MSG)
+        data = __reciev_all(my_socket, MAX_SIZE_OF_MSG)
         length = int(data.decode())
-        data = b""
-        while len(data) < length:
-            data += my_socket.recv(length - len(data))
+        data = __reciev_all(my_socket, length)
         data = data.decode(encoding="utf8")
         print(f"recieved {data}")
         return data
     except UnicodeDecodeError:
         return ""
+
+
+def __reciev_all(my_socket: socket, length: int) -> bytes:
+    data = b""
+    while len(data) < length:
+        data += my_socket.recv(length - len(data))
+    return data
 
 
 def binary_send(msg: bytes, client_socket: socket):
@@ -87,7 +92,10 @@ def receive_file(my_socket: socket) -> (bool, str):
         print(data)
         return False, data
 
-    file_name, file_size = " ".join(data.split()[0:-1]), int(data.split()[-1])
+    try:
+        file_name, file_size = " ".join(data.split()[0:-1]), int(data.split()[-1])
+    except ValueError:
+        return False, data
     # print(f"[*] Preparing to receive {file_size} bytes from server")
     path = Path(UPLOAD_DEFAULT_PATH) / Path(file_name).name
     with open(path, "wb") as file:

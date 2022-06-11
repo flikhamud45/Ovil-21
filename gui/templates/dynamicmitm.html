@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html >
 <head>
-	{{ turbo() }}
 	<style>
 #load {
   font-family: Arial, Helvetica, sans-serif;
@@ -29,7 +28,7 @@
 	<meta charset="UTF-8">
 	<title>Ovil-21</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	<link rel="shortcut icon" href="imgs/favicon.ico">
+	<link rel="shortcut icon" href="/static/imgs/favicon.ico">
 	<style>
 	body {
 		overflow: hidden;
@@ -858,13 +857,29 @@
 	</style>
 	<style>
 	.results {
-		margin: 30px;
+<!--		margin: 30px;-->
+		margin-left: 50ew;
+		margin-top: 10vh;
+		position: absolute;
+		width: 100%;
+		bottom: 35%;
+		text-align: center;
+		color: #0B486B;
+		color: #FE4365;
+<!--		border: 3px solid green;-->
+		font-weight: 900;
+	}
 
+	.results2 {
+		white-space: pre-line;
+		margin: 30px;
+		margin-top: 30vh;
 		color: #0B486B;
 		color: #FE4365;
 
 		font-weight: 900;
 	}
+
 	.button-submit {
 		background: #fff;
 		-webkit-box-shadow: 0 0 0 2px #4cd964;
@@ -872,14 +887,16 @@
 		border: 0;
 		height: 40px;
 		line-height: 36px;
-		width: 120px;
+		width: 22vw;
 		font-weight: 900;
-		font-size: 14px;
+		font-size: 2vw;
 		color: #4cd964;
-		position: absolute;
-		/* top: 50%; */
-		left: 50%;
-		top:84%;
+		position: relative;
+		margin-left: 50vw;
+		margin-bottom: 3.5vh;
+		margin-top: 3.5vh;
+		left: 0%;
+		bottom: -5%;
 		-webkit-transform: translate(-50%, -50%);
 		-moz-transform: translate(-50%, -50%);
 		-o-transform: translate(-50%, -50%);
@@ -957,12 +974,11 @@
 		font-size: 2vw;
 		color: #4cd964;
 		position: relative;
-		top: 33%;
-		bottom: 30%;
-		left: 22%;
-		right: 22%;
-		 margin-right: 7vw;
-		 margin-bottom: 7vh;
+		margin-left: 50vw;
+		margin-bottom: 3.5vh;
+		margin-top: 3.5vh;
+		left: 0%;
+		bottom: -70%;
 		-webkit-transform: translate(-50%, -50%);
 		-moz-transform: translate(-50%, -50%);
 		-o-transform: translate(-50%, -50%);
@@ -1027,7 +1043,6 @@
 		-ms-animation: fade 0.8s ease forwards;
 		animation: fade 0.8s ease forwards;
 	}
-
 
 	#reset {
 		position: absolute;
@@ -1102,23 +1117,29 @@
 	<div class="container">
 
 		<div class="st-container">
-			<section class="st-panel" id="st-panel-3">
-			<div class="st-deco" data-icon="✦"></div>
-			<h2>Dynamic MITM</h2>
+
+			<input type="radio" name="radio-set" checked="checked" id="st-control-1"/>
+			<a href="#st-panel-1">Dynamic MITM</a>
+
 			<div class="st-scroll">
-				<div class="st-centered">
+				<section class="st-panel" id="st-panel-3">
+				<div class="st-deco" data-icon="✦"></div>
+				<h2>Dynamic MITM</h2>
+						{% if connected %}
 
-				<table id="load">
-					{% for line in data %}
-						<tr>
-							<td>{{ line }}</td>
-						</tr>
-					{% endfor %}
-				</table>
+							<div id="DynamicMitmData" class="results2">{{ data }}</div>
+							<button id="RefreshSubmit" class="button-submit" onclick='location.reload()'>Reload</button>
+							<div id="DynamicMitmResult" class="results"></div>
+							<button id="DynamicMitmSubmit" class="button-submit">Stop</button>
+							<div id="DynamicMitmData2" class="results2"></div>
 
-					</div>
-			</div><!-- // st-scroll -->
-			</section>
+						{% else %}
+							<h3>Not Started!</h3>
+							<div id="StartDynamicMitmResult" class="results"></div>
+							<button id="StartDynamicMitmSubmit" class="button-submit2" onclick='location.reload()'>Start</button>
+						{% endif %}
+				</section>
+			</div>
 		</div><!-- // st-container -->
 
 	</div>

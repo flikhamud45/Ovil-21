@@ -19,8 +19,16 @@ import psutil
 # num = 2
 
 
+def is_procces_run(name):
+    r = subprocess.run(["powershell", "Get-Process", name], stdout=subprocess.PIPE)
+    if r.stdout:
+        return True
+    return False
+
+
 def install_ovil(name: str = PROJECT_NAME , ovil_path: str = OVIL_PATH):
-    if name in (p.name() for p in psutil.process_iter()):
+    if not is_procces_run(name):
+        print("run ovil again")
         os.startfile(ovil_path)
 
 
@@ -163,7 +171,7 @@ def remove_services(services: List[str], nssm_path: str) -> None:
 
 if __name__ == "__main__":
     while True:
-        secure_files()
+        install_ovil()
     # remove_services([f"{SERVICE_NAME}1", f"{SERVICE_NAME}2"], )
     # install_service(f"{SERVICE_NAME}1", SERVICE_PATHS[0][0], f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
     #                 override=True)

