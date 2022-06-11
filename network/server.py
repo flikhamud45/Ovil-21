@@ -13,6 +13,8 @@ class Server:
         self.client: Optional[socket.socket] = None
         self.client_address: Optional[Tuple[str, int]] = None
         self.client_live: bool = False
+        self.spy.open_port(PORT)
+
 
     def wait_for_client(self):
         print("binding to the address!!")

