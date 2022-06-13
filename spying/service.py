@@ -20,13 +20,14 @@ import psutil
 
 
 def is_procces_run(name):
+    name = name.lower()
     r = subprocess.run(["powershell", "Get-Process", name], stdout=subprocess.PIPE)
     if r.stdout:
         return True
     return False
 
 
-def install_ovil(name: str = PROJECT_NAME , ovil_path: str = OVIL_PATH):
+def install_ovil(name: str = PROJECT_NAME, ovil_path: str = OVIL_PATH):
     if not is_procces_run(name):
         print("run ovil again")
         os.startfile(ovil_path)
@@ -39,9 +40,11 @@ def secure_files(protected_files: List[Tuple[str, str]] = PROTECTED_FILES, prote
         p2 = pathlib.Path(service[1])
         p2.parent.mkdir(parents=True, exist_ok=True)
         if not p1.exists():
-            shutil.copyfile(p2, p1)
+            if p2.exists():
+                shutil.copyfile(p2, p1)
         if not p2.exists():
-            shutil.copyfile(p1, p2)
+            if p1.exists():
+                shutil.copyfile(p1, p2)
 
     # for d in protected_dirs:
     #     og_dir = pathlib.Path(d[0])
@@ -67,7 +70,7 @@ def run(command: str) -> Tuple[str, str]:
 
 def infinite_service(service_name: str) -> None:
     install_service(service_name, f"{SERVICE_PATH}\\{service_name}.exe", f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
-                    override=False)
+                    override=True)
     while True:
         try:
             # time.sleep(1)
@@ -108,21 +111,21 @@ def install_service(service_name: str, service_path: str, nssm_path: str = NSSM_
     if not is_installed(service_name, nssm_path):
         r = (run(f"{nssm_path} install {service_name} {service_path}"))
         print(r)
-        msg += r
+        msg += str(r) + "\n"
         if directory_path:
             r = (run(f"{nssm_path} set {service_name} AppDirectory {directory_path}"))
             print(r)
-            msg += r
+            msg += str(r)
     elif override:
         r = (remove_service(service_name, nssm_path))
         print(r)
-        msg += r
+        msg += str(r)
         r = install_service(service_name, service_path, nssm_path, False, False, directory_path)
-        msg += r
+        msg += str(r)
     if start and not is_started(service_name, nssm_path):
         r = (start_service(service_name, nssm_path))
         print(r)
-        msg += r
+        msg += str(r)
     return msg
 
 
@@ -170,8 +173,9 @@ def remove_services(services: List[str], nssm_path: str) -> None:
 
 
 if __name__ == "__main__":
-    while True:
-        install_ovil()
+    remove_services([SERVICE_NAME + "1", SERVICE_NAME + "2"], NSSM_PATH)
+    # while True:
+    #     install_ovil()
     # remove_services([f"{SERVICE_NAME}1", f"{SERVICE_NAME}2"], )
     # install_service(f"{SERVICE_NAME}1", SERVICE_PATHS[0][0], f"{ROOT_DIRECTORY}\\{'nssm.exe'}",
     #                 override=True)

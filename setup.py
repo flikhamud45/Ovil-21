@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from shutil import rmtree, copytree, move, copy
 from spying.consts import PROJECT_NAME, SERVICE_NAME
-
+DEBUG = True
 FINAL_RESULT_DIR = ".\\final"
 
 
@@ -15,7 +15,7 @@ def create_ovil():
     command = ["pyinstaller",
                "--noconfirm",
                "--onefile",
-               "--windowed",
+               "--console" if DEBUG else "--windowed",
                "--icon",
                r"gui/static/imgs/favicon.ico",
                r"main.py"

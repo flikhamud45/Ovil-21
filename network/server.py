@@ -18,7 +18,11 @@ class Server:
 
     def wait_for_client(self):
         print("binding to the address!!")
-        self.socket.bind(("0.0.0.0", PORT))
+        try:
+            self.socket.bind(("0.0.0.0", PORT))
+        except OSError:
+            print("An Ovil is already runs...")
+            return
         print("finished binding to the address!!")
         while True:
             self.socket.listen()
@@ -135,6 +139,7 @@ def cast_params(func: callable, params: list) -> bool:
             continue
         if param.default != param.empty and i >= len(params):
             params.append(param.default)
+            i += 1
             continue
         if params[i] == Massages.DEFAULT_PARAM.value:
             if param.default == param.empty:

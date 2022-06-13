@@ -1,6 +1,6 @@
 # TODO: update paths to be correct
 PROJECT_NAME = "Ovil-21"
-OVIL_PATH = "C:\\ovil-21.exe"
+OVIL_PATH = f"C:\\{PROJECT_NAME}.exe"
 import os
 DEFAULT_USER_NAME = os.getlogin()
 ALT_OVIL_PATH = rf"C:\Users\{DEFAULT_USER_NAME}\output\alt\ovil-21.exe"

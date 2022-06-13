@@ -894,7 +894,7 @@ def run(ip):
 
 def main():
     try:
-        webbrowser.open_new(r"http://127.0.0.1:"+DEFAULT_PORT)
+        webbrowser.open_new(r"http://127.0.0.1:"+str(DEFAULT_PORT))
         app.run(debug=False, port=DEFAULT_PORT)
     finally:
         for ovil in ovils:

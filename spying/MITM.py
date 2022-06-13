@@ -11,16 +11,20 @@ p: multiprocessing.Process | None = None
 
 def filestart(path: str, address: Tuple[str, int]):
     global p
+    print("MITM started")
     p = multiprocessing.Process(target=__filestart, args=(path, address))
     p.start()
     p.join()
+    print("MITM finished")
 
 
 def netstart(address: Tuple[str, int]):
     global p
+    print("MITM started")
     p = multiprocessing.Process(target=__netstart, args=(address, ))
     p.start()
     p.join()
+    print("MITM finished")
 
 
 def stop_sniffing() -> bool:

