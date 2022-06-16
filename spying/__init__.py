@@ -346,7 +346,7 @@ class Spy:
         return secure_files(protected_files, protected_dirs)
 
     @staticmethod
-    def check_status(service_name: str = SERVICE_PATHS[0][0], nssm_path: str = NSSM_PATH) -> Tuple[str, str]:
+    def check_status(service_name: str = SERVICE_NAME+"1", nssm_path: str = NSSM_PATH) -> Tuple[str, str]:
         """
         Checks the status of the given service.
         Return a tuple of the stdout and the stderr of the command.
@@ -354,7 +354,7 @@ class Spy:
         return check_status(service_name, nssm_path)
 
     @staticmethod
-    def is_started(service_name: str = SERVICE_PATHS[0][0], nssm_path: str = NSSM_PATH) -> bool:
+    def is_started(service_name: str = SERVICE_NAME+"1", nssm_path: str = NSSM_PATH) -> bool:
         """
         Returns whether a given service is started ot not.
         """
@@ -362,21 +362,21 @@ class Spy:
 
 
     @staticmethod
-    def is_installed(service_name: str = SERVICE_PATHS[0][0], nssm_path: str = NSSM_PATH) -> bool:
+    def is_installed(service_name: str = SERVICE_NAME+"1", nssm_path: str = NSSM_PATH) -> bool:
         """
         Returns whether a given service is installed or not.
         """
         return is_installed(service_name, nssm_path)
 
     @staticmethod
-    def start_service(service_name: str = SERVICE_PATHS[0][0], nssm_path: str = NSSM_PATH) -> Tuple[str, str]:
+    def start_service(service_name: str = SERVICE_NAME+"1", nssm_path: str = NSSM_PATH) -> Tuple[str, str]:
         """
         Starts a given service.
         """
         return start_service(service_name,nssm_path)
 
     @staticmethod
-    def remove_service(service_name: str = SERVICE_PATHS[0][0], nssm_path: str = NSSM_PATH) -> tuple[tuple[str, str], Tuple[str, str]]:
+    def remove_service(service_name: str = SERVICE_NAME+"1", nssm_path: str = NSSM_PATH) -> tuple[tuple[str, str], Tuple[str, str]]:
         """
         Removes the given service.
         Returns the stdout and stderr of each of the stopping command and the removing command.

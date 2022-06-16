@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 
 import win32api
@@ -83,6 +84,7 @@ def main():
             print("Closed the mutex successfully!")
 
 
-
-print("main started!")
-main()
+if __name__ == "__main__":
+    multiprocessing.freeze_support()
+    print("main started!")
+    main()

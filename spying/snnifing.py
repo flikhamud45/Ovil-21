@@ -245,6 +245,8 @@ class HttpsLogger(middleware.Middleware):
     async def mitm_started(cls, host: str, port: int):
         await cls.write(f"MITM started on {host}:{port}.\n")
         # print("MITM started on %s:%d.\n" % (host, port))
+        folder = Path(CERT_FOLDER)
+        folder.mkdir(parents=True, exist_ok=True)
         ca_path = f"{CERT_FOLDER}\\{ROOT_CA_NAME}"
         create_root_using_python(ca_path)
         # await create_root(f"{CERT_FOLDER}\\{ROOT_CA_NAME}")

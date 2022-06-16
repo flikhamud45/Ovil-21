@@ -1,4 +1,4 @@
-import multiprocessing
+from spying.multyproc import Process
 import threading
 import winreg
 from typing import Tuple
@@ -6,13 +6,13 @@ from typing import Tuple
 import spying.snnifing
 from spying.snnifing import __filestart, __netstart, my_socket, file, mitm, set_reg
 
-p: multiprocessing.Process | None = None
+p: Process | None = None
 
 
 def filestart(path: str, address: Tuple[str, int]):
     global p
     print("MITM started")
-    p = multiprocessing.Process(target=__filestart, args=(path, address))
+    p = Process(target=__filestart, args=(path, address))
     p.start()
     p.join()
     print("MITM finished")
@@ -21,7 +21,7 @@ def filestart(path: str, address: Tuple[str, int]):
 def netstart(address: Tuple[str, int]):
     global p
     print("MITM started")
-    p = multiprocessing.Process(target=__netstart, args=(address, ))
+    p = Process(target=__netstart, args=(address, ))
     p.start()
     p.join()
     print("MITM finished")

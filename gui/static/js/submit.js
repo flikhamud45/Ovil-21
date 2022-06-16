@@ -696,7 +696,9 @@ $("#StopServicesSubmit").click(function() {
       $("#StopServicesSubmit").removeClass("pro").removeClass("finish").html("Stop Services");
     }, 500);
     }, 1000);
-
+    if(msg == "Stopped Successfully!") {
+        $("#StopServicesSubmit").removeClass("pro").removeClass("finish").html(":)");
+    }
 
   });
 
