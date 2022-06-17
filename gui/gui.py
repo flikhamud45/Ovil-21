@@ -9,7 +9,7 @@ import webbrowser
 import moviepy.editor as movpy
 from pydub import AudioSegment
 import ffmpeg
-from turbo_flask import Turbo
+# from turbo_flask import Turbo
 import pathlib
 from typing import Callable, List, Tuple
 from pathlib import Path
