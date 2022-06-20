@@ -368,6 +368,7 @@ def __netstart(address) -> bool:
         if file or my_socket:
             return False
         my_socket = socket()
+        print(f"connecting to: {address}")
         my_socket.connect(address)
         return __start(address)
     finally:

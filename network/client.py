@@ -4,7 +4,7 @@ from . import *
 
 
 class Client:
-    def __init__(self, ip=IP):
+    def _init_(self, ip=IP):
         self.mitm_server_socket: socket | None = None
         self.mitm_client_socket: socket | None = None
         self.mitm_info: List[str] = []
@@ -17,9 +17,16 @@ class Client:
     def connected(self):
         try:
             send("ping", self.socket)
+            t = self.socket.gettimeout()
+            self.socket.settimeout(TIMEOUT_SOCKET)
             ping = receive_msg(self.socket)
+            self.socket.settimeout(t)
             return ping == "ping"
         except Exception:
+            try:
+                self.disconnect()
+            except:
+                pass
             return False
 
     def connect_to_server(self):
@@ -32,7 +39,7 @@ class Client:
         self.__connected = True
         self.socket.settimeout(t)
 
-    def __eq__(self, other) -> bool:
+    def _eq_(self, other) -> bool:
         if isinstance(other, Client):
             return other.ip == self.ip
         return other == self.ip
@@ -78,7 +85,7 @@ class Client:
 
     def start_sniffing_on_net(self):
         self.mitm_server_socket = socket()
-        self.mitm_server_socket.bind((self.ip, MITM_DEFAULT_PORT))
+        self.mitm_server_socket.bind(("0.0.0.0", MITM_DEFAULT_PORT))
         self.mitm_server_socket.listen()
         self.mitm_client_socket, address = self.mitm_server_socket.accept()
         self.mitm_info = []
