@@ -71,7 +71,8 @@ def main():
         print("Invalid number of params. try add ' to your path")
         exit(0)
     final_dir = Path(FINAL_RESULT_DIR)
-    rmtree(str(final_dir))
+    if final_dir.exists():
+        rmtree(str(final_dir))
     final_dir.mkdir(parents=True, exist_ok=False)
     create_ovil()
     # create_server()

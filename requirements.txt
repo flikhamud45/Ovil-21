@@ -1,6 +1,6 @@
 appdirs==1.4.4
 browser_history==0.3.2
-cryptography==36.0.2
+cryptography~=36.0.1
 ffmpeg==1.4
 Flask==2.1.2
 geocoder==1.38.1
@@ -17,3 +17,5 @@ servicemanager==2.0.10
 toolbox==1.8.1
 Turbo_Flask==0.8.0
 unicrypto==0.0.5
+opencv-python~=4.5.5.64
+pywin32~=303

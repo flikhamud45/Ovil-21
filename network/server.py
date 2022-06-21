@@ -83,6 +83,8 @@ class Server:
         #     command = SPY_COMMANDS[command]
         function = getattr(self.spy, command, None)
         if not function:
+            if params[0] == "?":
+                return parse_methods([(function, command)])
             match command:
                 case "steal_file":
                     function = self.steal_file

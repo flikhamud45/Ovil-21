@@ -77,7 +77,7 @@ def binary_receive(my_socket: socket) -> (int, bytes):
     """
     length = int(my_socket.recv(CHUNK_SIZE).decode())
     # print(f"[*] Preparing to receive chunk of {length} bytes from server")
-    chunk_data = my_socket.recv(length)
+    chunk_data = __reciev_all(my_socket, length)
     # print(f"[*] Received {len(chunk_data)} bytes from server {file_size - given} remaining bytes")
     return length, chunk_data
 

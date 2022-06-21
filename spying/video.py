@@ -197,7 +197,7 @@ class VideoRecorder(Recorder):
         if not filename.endswith("mkv"):
             filename += "mkv"
         # cmd = f"{FFMPEG_PATH} -y -ac 2 -channel_layout {'mono' if audio.channels == 1 else 'stereo'} -i {self.filename} -i {self.filename[0:-4]}.avi -pix_fmt yuv420p {filename}.avi"
-        cmd = f"{FFMPEG_PATH} -y -i {audio.filename}  -r 30 -i {self.filename}  -filter:a aresample=async=1 -c:a flac -c:v copy {filename}"
+        cmd = [FFMPEG_PATH, "-y", "-i", audio.filename, "-r", "30", "-i", self.filename,  "-filter:a", "aresample=async=1", "-c:a", "flac", "-c:v", "copy", filename]
         subprocess.call(cmd, shell=False)
         # input_video = {FFMPEG_PATH}.input(self.filename)
         # input_audio = {FFMPEG_PATH}.input(audio.filename)

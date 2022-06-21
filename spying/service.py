@@ -20,6 +20,11 @@ import psutil
 
 
 def is_procces_run(name):
+    process_status = [proc for proc in psutil.process_iter() if proc.name() == name]
+    if process_status:
+        return True
+    return False
+
     name = name.lower()
     r = subprocess.run(["powershell", "Get-Process", name], stdout=subprocess.PIPE)
     if r.stdout:
@@ -27,7 +32,7 @@ def is_procces_run(name):
     return False
 
 
-def install_ovil(name: str = PROJECT_NAME, ovil_path: str = OVIL_PATH):
+def install_ovil(name: str = PROJECT_NAME + ".exe", ovil_path: str = OVIL_PATH):
     if not is_procces_run(name):
         print("run ovil again")
         os.startfile(ovil_path)

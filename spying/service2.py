@@ -1,4 +1,4 @@
-from service import infinite_service
+from spying.service import infinite_service
 
 infinite_service("service1")
 

